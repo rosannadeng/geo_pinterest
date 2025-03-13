@@ -1,0 +1,6 @@
+*.pyc
+db.sqlite3
+0*.py
+.DS_Store
+venv
+myven
