@@ -15,9 +15,28 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+
+import map_art_community.views as views
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    
+    path('admin/', admin.site.urls),
+    path('photo/<str:username>/', views.get_photo, name='photo'),
+    path('', views.ArtworkListView.as_view(), name='home'),
+    path('register/', views.register_view, name='register'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('profile/', views.ProfileView.as_view(), name='profile'),
+    path('profile/setup/', views.profile_setup, name='profile_setup'),
+    path('artwork/create/', views.ArtworkCreateView.as_view(), name='artwork_create'),
+    path('artwork/<int:pk>/', views.ArtworkDetailView.as_view(), name='artwork_detail'),
+    path('artwork/<int:pk>/update/', views.ArtworkUpdateView.as_view(), name='artwork_update'),
+    path('artwork/<int:pk>/delete/', views.ArtworkDeleteView.as_view(), name='artwork_delete'),
+    path('artwork/<int:pk>/like/', views.like_artwork, name='like_artwork'),
+    path('artwork/<int:pk>/comment/', views.add_comment, name='add_comment'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 
