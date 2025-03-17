@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from .models import Profile
+from django.contrib.auth.password_validation import validate_password
+from .models import Profile, Artwork,Comment
 from django.conf import settings
 import datetime
 MAX_UPLOAD_SIZE = 2500000
@@ -68,17 +69,103 @@ class RegisterForm(forms.Form):
         raise forms.ValidationError("Invalid form data")
     
 class ProfileForm(forms.ModelForm):
-    photo = forms.ImageField(required=False, widget=forms.FileInput)
-    
     class Meta:
         model = Profile
-        fields = ['photo', 'about', 'fname', 'lname', 'pronouns', 'location']
+        fields = ['profile_picture', 'bio', 'location', 'fname', 'lname']
+        labels = {
+            'profile_picture': 'Profile Picture',
+            'bio': 'About Me',
+            'location': 'Location',
+            'fname': 'First Name',
+            'lname': 'Last Name',
+        }
+        widgets = {
+            'bio': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Tell us about yourself...'
+            }),
+            'location': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Where are you based?'
+            }),
+            'fname': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'First Name'
+            }),
+            'lname': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Last Name'
+            }),
+            'profile_picture': forms.FileInput(attrs={
+                'class': 'form-control'
+            })
+        }
 
-    def __init__(self, *args, **kwargs):
-        super(Profile, self).__init__(*args, **kwargs)
-        for visible in self.visible_fields():
-            if visible.name == 'about':
-                visible.field.widget.attrs['class'] = 'edit-profile-input form-control about-input'
-            else:
-                visible.field.widget.attrs['class'] = 'edit-profile-input form-control rounded-pill'
+    def clean_profile_picture(self):
+        picture = self.cleaned_data.get('profile_picture')
+        if picture:
+            if picture.size > settings.MAX_UPLOAD_SIZE:
+                raise forms.ValidationError('File size must be under 2.5 MB')
+            return picture
+        return None
+
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+        if commit:
+            profile.save()
+        return profile
+
+
+class ProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['profile_picture', 'bio', 'location', 'fname', 'lname']
+        widgets = {
+            'bio': forms.Textarea(attrs={'rows': 4}),
+        }
+
+class ArtworkForm(forms.ModelForm):
+    creation_date = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        help_text='When was this artwork created?'
+    )
+
+    class Meta:
+        model = Artwork
+        fields = ['title', 'description', 'image', 'medium', 'creation_date', 
+                 'latitude', 'longitude', 'location_name', 'street_view_url']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 4}),
+            'latitude': forms.NumberInput(attrs={'step': 'any'}),
+            'longitude': forms.NumberInput(attrs={'step': 'any'}),
+        }
+
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ['content']
+        widgets = {
+            'content': forms.Textarea(attrs={
+                'rows': 3,
+                'placeholder': 'Share your thoughts about this artwork...'
+            }),
+        }
+
+class ArtworkSearchForm(forms.Form):
+    SORT_CHOICES = [
+        ('recent', 'Most Recent'),
+        ('popular', 'Most Popular'),
+        ('views', 'Most Viewed'),
+    ]
+
+    MEDIUM_CHOICES = [('', 'All')] + list(Artwork.MEDIUM_CHOICES)
+
+    search = forms.CharField(required=False)
+    medium = forms.ChoiceField(choices=MEDIUM_CHOICES, required=False)
+    sort_by = forms.ChoiceField(choices=SORT_CHOICES, required=False)
+    date_from = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+    date_to = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+
         
