@@ -1,2 +1,3 @@
-# s25_team_4
-Repository for s25_team_4
+# Artiverse: A Map-Based Art Community Platform
+
+Risa Xie, Yuxin Deng, Karry Mao
