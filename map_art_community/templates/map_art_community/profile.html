@@ -1,71 +1,91 @@
-{% extends 'map_art_community/base.html' %}
-
-{% block content %}
+{% extends 'map_art_community/base.html' %} {% block content %}
 <div class="container mt-5">
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body text-center">
-                    {% if profile.profile_picture %}
-                        <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="rounded-circle img-fluid mb-3" style="max-width: 200px;">
-                    {% else %}
-                        <img src="/static/map_art_community/default_profile.png" alt="Default Profile Picture" class="rounded-circle img-fluid mb-3" style="max-width: 200px;">
-                    {% endif %}
-                    
-                    <h3>{{ profile.user.username }}</h3>
-                    {% if profile.user.first_name or profile.user.last_name %}
-                        <p class="text-muted">{{ profile.user.first_name }} {{ profile.user.last_name }}</p>
-                    {% endif %}
-                    
-                    {% if profile.location %}
-                        <p><i class="fas fa-map-marker-alt"></i> {{ profile.location }}</p>
-                    {% endif %}
-                    
-                    {% if profile.bio %}
-                        <p class="text-muted">{{ profile.bio }}</p>
-                    {% endif %}
-                    
-                    {% if user.is_authenticated and user == profile.user %}
-                        <a href="{% url 'profile_setup' %}" class="btn btn-primary">Edit Profile</a>
-                    {% endif %}
-                </div>
-            </div>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body text-center">
+          {% if profile.profile_picture %}
+          <img
+            src="{{ profile.profile_picture.url }}"
+            alt="Profile Picture"
+            class="rounded-circle img-fluid mb-3"
+            style="max-width: 200px"
+          />
+          {% else %}
+          <img
+            src="/static/map_art_community/default_profile.png"
+            alt="Default Profile Picture"
+            class="rounded-circle img-fluid mb-3"
+            style="max-width: 200px"
+          />
+          {% endif %}
+
+          <h3>{{ profile.user.username }}</h3>
+          {% if profile.user.first_name or profile.user.last_name %}
+          <p class="text-muted">
+            {{ profile.user.first_name }} {{ profile.user.last_name }}
+          </p>
+          {% endif %} {% if profile.location %}
+          <p><i class="fas fa-map-marker-alt"></i> {{ profile.location }}</p>
+          {% endif %} {% if profile.bio %}
+          <p class="text-muted">{{ profile.bio }}</p>
+          {% endif %} {% if user.is_authenticated and user == profile.user %}
+          <a href="{% url 'profile_setup' %}" class="btn btn-primary"
+            >Edit Profile</a
+          >
+          {% endif %}
         </div>
-        
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Artworks</h4>
-                    {% if user.is_authenticated and user == profile.user %}
-                        <a href="{% url 'artwork_create' %}" class="btn btn-primary btn-sm">Upload New Artwork</a>
-                    {% endif %}
-                </div>
-                <div class="card-body">
-                    {% if artworks %}
-                        <div class="row">
-                            {% for artwork in artworks %}
-                                <div class="col-md-6 mb-4">
-                                    <div class="card h-100">
-                                        {% if artwork.image %}
-                                            <img src="{{ artwork.image.url }}" class="card-img-top" alt="{{ artwork.title }}">
-                                        {% endif %}
-                                        <div class="card-body">
-                                            <h5 class="card-title">{{ artwork.title }}</h5>
-                                            <p class="card-text">{{ artwork.description|truncatewords:30 }}</p>
-                                            {% if user.is_authenticated and user == artwork.artist %}
-                                                <a href="{% url 'artwork_update' artwork.id %}" class="btn btn-outline-primary">Edit</a>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <p class="text-center">No artworks uploaded yet.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+
+    <div class="col-md-8">
+      <div class="card">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h4 class="mb-0">Artworks</h4>
+          {% if user.is_authenticated and user == profile.user %}
+          <a href="{% url 'artwork_create' %}" class="btn btn-primary btn-sm"
+            >Upload New Artwork</a
+          >
+          {% endif %}
+        </div>
+        <div class="card-body">
+          {% if artworks %}
+          <div class="row">
+            {% for artwork in artworks %}
+            <div class="col-md-6 mb-4">
+              <div class="card h-100">
+                {% if artwork.image %}
+                <img
+                  src="{{ artwork.image.url }}"
+                  class="card-img-top"
+                  alt="{{ artwork.title }}"
+                />
+                {% endif %}
+                <div class="card-body">
+                  <h5 class="card-title">{{ artwork.title }}</h5>
+                  <p class="card-text">
+                    {{ artwork.description|truncatewords:30 }}
+                  </p>
+                  {% if user.is_authenticated and user == artwork.artist %}
+                  <a
+                    href="{% url 'artwork_update' artwork.id %}"
+                    class="btn btn-outline-primary"
+                    >Edit</a
+                  >
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-center">No artworks uploaded yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-{% endblock %} 
+{% endblock %}
