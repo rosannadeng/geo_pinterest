@@ -8,6 +8,7 @@ from django.http import Http404, HttpResponse
 from django.urls import reverse_lazy
 from django.contrib.auth.models import User
 from .models import Profile, Artwork
+import mimetypes
 from .forms import LoginForm, RegisterForm, ProfileForm, ArtworkForm
 
 
