@@ -1,30 +1,31 @@
-{% extends 'map_art_community/base.html' %}
-
-{% block content %}
+{% extends 'map_art_community/base.html' %} {% block content %}
 <div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="text-center">{% if form.instance.pk %}Edit{% else %}Upload New{% endif %} Artwork</h2>
-                </div>
-                <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        {% if form.errors %}
-                            <div class="alert alert-danger">
-                                Please correct the errors below.
-                            </div>
-                        {% endif %}
-                        {{ form.as_p }}
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">{% if form.instance.pk %}Update{% else %}Upload{% endif %} Artwork</button>
-                            <a href="{% url 'profile' %}" class="btn btn-secondary">Cancel</a>
-                        </div>
-                    </form>
-                </div>
-            </div>
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="text-center">
+            {% if form.instance.pk %}Edit{% else %}Upload New{% endif %} Artwork
+          </h2>
         </div>
+        <div class="card-body">
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %} {% if form.errors %}
+            <div class="alert alert-danger">
+              Please correct the errors below.
+            </div>
+            {% endif %} {{ form.as_p }}
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary">
+                {% if form.instance.pk %}Update{% else %}Upload{% endif %}
+                Artwork
+              </button>
+              <a href="{% url 'profile' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
-{% endblock %} 
+{% endblock %}
