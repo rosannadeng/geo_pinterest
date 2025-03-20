@@ -4,42 +4,46 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 
+
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
+    profile_picture = models.ImageField(
+        upload_to="profile_pictures/", null=True, blank=True
+    )
     bio = models.TextField(max_length=500, blank=True)
     location = models.CharField(max_length=100, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     featured_artwork = models.ForeignKey(
-        'Artwork',
+        "Artwork",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        related_name='featured_in_profiles'
+        related_name="featured_in_profiles",
     )
 
     def __str__(self):
         return f"{self.user.username}'s profile"
 
+
 class Artwork(models.Model):
     MEDIUM_CHOICES = [
-        ('OIL', 'Oil Paint'),
-        ('ACR', 'Acrylic'),
-        ('WAT', 'Watercolor'),
-        ('DIG', 'Digital'),
-        ('MIX', 'Mixed Media'),
-        ('OTH', 'Other'),
+        ("OIL", "Oil Paint"),
+        ("ACR", "Acrylic"),
+        ("WAT", "Watercolor"),
+        ("DIG", "Digital"),
+        ("MIX", "Mixed Media"),
+        ("OTH", "Other"),
     ]
 
-    artist = models.ForeignKey(User, on_delete=models.CASCADE, related_name='artworks')
+    artist = models.ForeignKey(User, on_delete=models.CASCADE, related_name="artworks")
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    image = models.ImageField(upload_to='artworks/')
-    medium = models.CharField(max_length=3, choices=MEDIUM_CHOICES, default='OTH')
+    image = models.ImageField(upload_to="artworks/")
+    medium = models.CharField(max_length=3, choices=MEDIUM_CHOICES, default="OTH")
     creation_date = models.DateField()
     upload_date = models.DateTimeField(auto_now_add=True)
     location_name = models.CharField(max_length=200)
-    likes = models.ManyToManyField(User, related_name='liked_artworks', blank=True)
+    likes = models.ManyToManyField(User, related_name="liked_artworks", blank=True)
     views = models.PositiveIntegerField(default=0)
 
     def __str__(self):
@@ -48,10 +52,12 @@ class Artwork(models.Model):
     def total_likes(self):
         return self.likes.count()
 
+
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
+
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
