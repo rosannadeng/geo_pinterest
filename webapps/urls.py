@@ -36,7 +36,11 @@ urlpatterns = [
         views.ArtworkUpdateView.as_view(),
         name="artwork_update",
     ),
+
+    path("gallery", views.GalleryView.as_view(), name="gallery"),
+
     path('oauth/', include('social_django.urls', namespace='social')),
+
 ]
 
 if settings.DEBUG:
