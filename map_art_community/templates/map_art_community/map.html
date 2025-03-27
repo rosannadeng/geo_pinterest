@@ -1,12 +1,6 @@
-<!DOCTYPE html>
-<html lang="zh">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Map</title>
-    <script src="https://maps.googleapis.com/maps/api/js?key=[key]&callback=initMap&v=weekly&libraries=marker" async defer></script>
-</head>
-<body>
+{% extends 'map_art_community/base.html' %} {% block content %}
+<script src="https://maps.googleapis.com/maps/api/js?key=[key]&callback=initMap&v=weekly&libraries=marker" async defer></script>
+
     <style>
         #map {
             width: 100%;
@@ -50,5 +44,4 @@
             });
         }
     </script>
-</body>
-</html>
+{% endblock %}
