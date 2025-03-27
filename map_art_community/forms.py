@@ -6,9 +6,7 @@ from .models import Profile, Artwork
 
 class LoginForm(forms.Form):
     username = forms.CharField(label="Username", max_length=20)
-    password = forms.CharField(
-        label="Password", max_length=20, widget=forms.PasswordInput
-    )
+    password = forms.CharField(label="Password", max_length=20, widget=forms.PasswordInput)
 
     def login_valid(self):
         if not self.is_valid():
@@ -24,12 +22,8 @@ class LoginForm(forms.Form):
 
 class RegisterForm(forms.Form):
     username = forms.CharField(label="Username", max_length=20)
-    password = forms.CharField(
-        label="Password", max_length=20, widget=forms.PasswordInput
-    )
-    confirm_password = forms.CharField(
-        label="Confirm Password", max_length=20, widget=forms.PasswordInput
-    )
+    password = forms.CharField(label="Password", max_length=20, widget=forms.PasswordInput)
+    confirm_password = forms.CharField(label="Confirm Password", max_length=20, widget=forms.PasswordInput)
     firstname = forms.CharField(label="First Name", max_length=20)
     lastname = forms.CharField(label="Last Name", max_length=20)
     email = forms.EmailField(label="Email", max_length=50)
@@ -73,9 +67,7 @@ class ProfileForm(forms.ModelForm):
                     "placeholder": "Tell us about yourself...",
                 }
             ),
-            "location": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "Where are you based?"}
-            ),
+            "location": forms.TextInput(attrs={"class": "form-control", "placeholder": "Where are you based?"}),
             "profile_picture": forms.FileInput(attrs={"class": "form-control"}),
         }
 
@@ -90,6 +82,8 @@ class ArtworkForm(forms.ModelForm):
             "medium",
             "creation_date",
             "location_name",
+            "latitude",
+            "longitude",
         ]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 4}),
