@@ -35,6 +35,7 @@ urlpatterns = [
         views.ArtworkUpdateView.as_view(),
         name="artwork_update",
     ),
+    path("map", views.map_view, name="map"),
 ]
 
 if settings.DEBUG:
