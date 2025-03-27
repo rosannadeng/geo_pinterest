@@ -9,6 +9,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth.models import User
 from .models import Profile, Artwork
 import mimetypes
+import json
 from .forms import LoginForm, RegisterForm, ProfileForm, ArtworkForm
 
 
@@ -78,6 +79,26 @@ def profile_setup(request):
     else:
         form = ProfileForm(instance=request.user.profile)
     return render(request, "map_art_community/profile_setup.html", {"form": form})
+
+
+@login_required
+def map_view(request):
+    artworks = Artwork.objects.all()
+    artworks_dicts = []
+    for artwork in artworks:
+        artwork_dict = {
+            "title": artwork.title,
+            "description": artwork.description,
+            "image": artwork.image.url,
+            "medium": artwork.medium,
+            "creation_date": artwork.creation_date,
+            "location_name": artwork.location_name,
+            "latitude": artwork.latitude,
+            "longitude": artwork.longitude,
+            "likes": artwork.likes.count(),
+        }
+        artworks_dicts.append(artwork_dict)
+    return render(request, "map_art_community/map.html", {"artworks": artworks_dicts})
 
 
 class ProfileView(LoginRequiredMixin, DetailView):
