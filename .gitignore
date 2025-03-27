@@ -7,3 +7,7 @@ venv
 .vscode
 myven
 artworks/
+profile_pictures/
+config.ini
+avatars/
+get_random_key.py

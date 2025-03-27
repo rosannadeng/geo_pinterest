@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from .models import Profile, Artwork
 import mimetypes
 from .forms import LoginForm, RegisterForm, ProfileForm, ArtworkForm
+from social_core.exceptions import AuthFailed
 
 
 def login_view(request):
@@ -128,3 +129,8 @@ class GalleryView(LoginRequiredMixin, ListView):
     
     
     
+def social_auth_error(request):
+    messages.error(request, "Authentication failed. Please try again.")
+    return redirect('login')
+
+ 
