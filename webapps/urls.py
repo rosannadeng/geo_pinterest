@@ -16,7 +16,7 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 import map_art_community.views as views
@@ -28,6 +28,7 @@ urlpatterns = [
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
     path("profile", views.ProfileView.as_view(), name="profile"),
+    path("profile/<str:username>", views.ProfileView.as_view(), name="user_profile"),
     path("profile/setup", views.profile_setup, name="profile_setup"),
     path("artwork/create", views.ArtworkCreateView.as_view(), name="artwork_create"),
     path(
@@ -36,6 +37,8 @@ urlpatterns = [
         name="artwork_update",
     ),
     path("map", views.map_view, name="map"),
+    path("gallery", views.GalleryView.as_view(), name="gallery"),
+    path('oauth/', include('social_django.urls', namespace='social')),
 ]
 
 if settings.DEBUG:
