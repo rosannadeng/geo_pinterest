@@ -5,6 +5,7 @@ import MainLayout from './components/Layout/MainLayout';
 import Home from './pages/Home/index';
 import Gallery from './pages/Gallery/index';
 import Profile from './pages/Profile/index';
+import MapPage from './pages/Map/index';
 const { Content } = Layout;
 
 
@@ -17,6 +18,7 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/map" element={<MapPage />} />
           </Routes>
         </Content>
       </MainLayout>

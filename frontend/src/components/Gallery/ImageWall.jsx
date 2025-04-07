@@ -2,10 +2,10 @@ import React from 'react';
 import { Image } from 'antd';
 import VirtualList from 'rc-virtual-list';
 
-const ImageWall = ({ images = [] }) => {
+const ImageWall = ({ artworks = [] }) => {
   return (
     <VirtualList
-      data={images}
+      data={artworks}
       height={400}
       itemHeight={200}
       itemKey="id"
