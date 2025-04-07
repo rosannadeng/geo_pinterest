@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import DetailView, CreateView, UpdateView
+from django.views.generic import DetailView, CreateView, UpdateView, ListView
 from django.contrib import messages
 from django.http import Http404, HttpResponse
 from django.urls import reverse_lazy
@@ -11,6 +11,7 @@ from .models import Profile, Artwork
 import mimetypes
 import json
 from .forms import LoginForm, RegisterForm, ProfileForm, ArtworkForm
+from social_core.exceptions import AuthFailed
 
 
 def login_view(request):
@@ -135,3 +136,22 @@ class ArtworkUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_queryset(self):
         return Artwork.objects.filter(artist=self.request.user)
+
+
+
+class GalleryView(LoginRequiredMixin, ListView):
+    model = Artwork
+    template_name = "map_art_community/gallery.html"
+    context_object_name = "artworks"
+    paginate_by = 12
+
+    def get_queryset(self):
+        return Artwork.objects.all().order_by("-upload_date")
+    
+    
+    
+def social_auth_error(request):
+    messages.error(request, "Authentication failed. Please try again.")
+    return redirect('login')
+
+ 
