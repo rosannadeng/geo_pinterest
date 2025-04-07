@@ -1,7 +1,7 @@
 import React from 'react';
 import { Layout } from 'antd';
 import AppHeader from './AppHeader';
-
+import AppSider from './AppSider';
 const { Content } = Layout;
 
 const MainLayout = ({ children }) => {
@@ -9,7 +9,8 @@ const MainLayout = ({ children }) => {
     <Layout>
       <AppHeader />
       <Layout>
-        <Content style={{ padding: '24px', minHeight: 'calc(100vh - 64px)' }}>
+        <AppSider />
+        <Content style={{ padding: '0', minHeight: 'calc(100vh - 64px)' }}>
           {children}
         </Content>
       </Layout>
