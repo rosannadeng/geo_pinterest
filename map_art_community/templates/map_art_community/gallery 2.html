@@ -1,0 +1,100 @@
+{% extends 'map_art_community/base.html' %} {% block content %}
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-md-12">
+      <h1 class="mb-4">Artwork Gallery</h1>
+      
+      <!-- 添加瀑布流容器 -->
+      <div class="masonry-grid">
+        {% for artwork in artworks %}
+        <div class="masonry-item mb-4">
+          <div class="card">
+            {% if artwork.image %}
+            <img src="{{ artwork.image.url }}" class="card-img-top" alt="{{ artwork.title }}" style="width: 100%; height: auto;">
+            {% endif %}
+            <div class="card-body">
+              <h5 class="card-title">{{ artwork.title }}</h5>
+              <p class="card-text">{{ artwork.description|truncatewords:30 }}</p>
+              <p class="text-muted">
+                <small>Author: {{ artwork.artist.username }}</small><br>
+                <small>Creation Date: {{ artwork.creation_date }}</small><br>
+                <small>Location: {{ artwork.location_name }}</small>
+              </p>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 在 base.html 的底部添加 Masonry.js -->
+{% block extra_js %}
+<script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+<script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var grid = document.querySelector('.masonry-grid');
+  var masonry;
+
+  // 初始化 Masonry
+  imagesLoaded(grid, function() {
+    masonry = new Masonry(grid, {
+      itemSelector: '.masonry-item',
+      columnWidth: '.masonry-item',
+      percentPosition: true,
+      gutter: 20
+    });
+  });
+});
+</script>
+{% endblock %}
+
+<!-- 添加自定义样式 -->
+{% block extra_css %}
+<style>
+.masonry-grid {
+  width: 100%;
+}
+
+.masonry-item {
+  width: calc(33.333% - 20px);
+  margin-bottom: 20px;
+}
+
+.card {
+  break-inside: avoid;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.card-img-top {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+@media (max-width: 992px) {
+  .masonry-item {
+    width: calc(50% - 20px);
+  }
+}
+
+@media (max-width: 576px) {
+  .masonry-item {
+    width: 100%;
+  }
+}
+</style>
+{% endblock %}
+
+
+
+{% endblock %}
