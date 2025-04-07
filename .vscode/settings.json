@@ -5,7 +5,4 @@
         "--line-length",
         "120"
     ],
-    "[html]": {
-        "editor.defaultFormatter": "vscode.html-language-features"
-    },
 }
