@@ -6,7 +6,7 @@ const { Sider } = Layout;
 
 const AppSider = () => {
   return (
-    <Sider width={300} style={{ background: '#fff', padding: '24px' }}>
+    <Sider width={420} style={{ background: '#fff', padding: '24px' }}>
       <Card title="Recent Artworks">
         <ImageWall />
       </Card>

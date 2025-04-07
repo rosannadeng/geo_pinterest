@@ -1,30 +1,69 @@
 import React from 'react';
-import { Layout, Menu, Button, Avatar } from 'antd';
-import { Link, useNavigate } from 'react-router-dom';
-import { UserOutlined, PictureOutlined, LogoutOutlined } from '@ant-design/icons';
+import { Layout, Menu, AutoComplete } from 'antd';
+import { Link } from 'react-router-dom';
+import { PictureOutlined, HomeOutlined, UserOutlined } from '@ant-design/icons';
 
 const { Header } = Layout;
 
 const AppHeader = () => {
-  const navigate = useNavigate();
-  const isAuthenticated = localStorage.getItem('token'); 
-
   const menuItems = [
-    { key: 'gallery', label: 'Gallery', icon: <PictureOutlined />, onClick: () => navigate('/gallery') },
-    { key: 'map', label: 'Map', icon: <PictureOutlined />, onClick: () => navigate('/map') },
-    { key: 'profile', label: 'Profile', icon: <UserOutlined />, onClick: () => navigate('/profile') },
+    { 
+      key: 'gallery',
+      label: <Link to="/gallery">Gallery</Link>,
+      icon: <PictureOutlined />
+    },
+    { 
+      key: 'map',
+      label: <Link to="/map">Map</Link>,
+      icon: <PictureOutlined />
+    },
+    {
+      key: 'profile',
+      label: <Link to="/profile">Profile</Link>,
+      icon: <UserOutlined />
+    }
   ];
 
-  // authentication test temporarily by GPT, need replace with real authentication
-
-  
-
   return (
-    <Header style={{ background: '#fff', padding: '0 24px' }}>
-      <div style={{ float: 'left', width: 120, height: 31, margin: '16px 24px 16px 0' }}>
-        <Link to="/" style={{ color: 'inherit' }}>Art Community</Link>
+    <Header 
+      style={{ 
+        background: '#fff', 
+        padding: '0 24px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between'
+      }}
+    >
+      {/* left */}
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center'
+      }}>
+        <div style={{ 
+          marginRight: '24px',
+          fontSize: '18px',
+          fontWeight: 'bold' 
+        }}>
+          <Link to="/" style={{ color: 'inherit' }}>Art Community</Link>
+        </div>
+        <AutoComplete
+          options={[]}
+          style={{ width: 200 }}
+          placeholder="Search"
+        />
       </div>
-      <Menu mode="horizontal" items={[...menuItems]} />
+
+      {/* right */}
+      <Menu 
+        mode="horizontal" 
+        items={menuItems}
+        style={{ 
+          background: '#fff',
+          border: 'none',
+          flex: 'none',
+          marginLeft: 'auto'
+        }} 
+      />
     </Header>
   );
 };

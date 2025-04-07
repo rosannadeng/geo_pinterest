@@ -7,7 +7,6 @@ const { Content } = Layout;
 const Home = () => {
   return (
     <Layout>
-        <AppSider />
         <Content>
             <h1>Home Page</h1>
         </Content>
