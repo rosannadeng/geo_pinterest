@@ -11,3 +11,8 @@ profile_pictures/
 config.ini
 avatars/
 get_random_key.py
+
+frontend/node_modules
+frontend/.env
+frontend/build
+frontend/.DS_Store
