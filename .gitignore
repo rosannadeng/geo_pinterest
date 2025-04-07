@@ -2,10 +2,10 @@
 db.sqlite3
 0*.py
 .DS_Store
-venv
+venv/
 .env
 .vscode
-myven
+myvenv/
 artworks/
 profile_pictures/
 config.ini
