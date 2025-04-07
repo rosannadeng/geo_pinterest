@@ -1,32 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col } from 'antd';
+import { Row, Col, Card } from 'antd';
 import ArtworkCard from '../../components/Gallery/ArtworkCard';
-import { getArtworks } from '../../services/api';
+// TODO: replace with real API call
+
+import { Layout } from 'antd';
+
+import ImageWall from '../../components/Gallery/ImageWall';
+
+const { Content } = Layout;
 
 const Gallery = () => {
-  const [artworks, setArtworks] = useState([]);
-
-  useEffect(() => {
-    const fetchArtworks = async () => {
-      try {
-        const response = await getArtworks();
-        setArtworks(response.data);
-      } catch (error) {
-        console.error('Error fetching artworks:', error);
-      }
-    };
-    fetchArtworks();
-  }, []);
-
-  return (
-    <Row gutter={[16, 16]}>
-      {artworks.map(artwork => (
-        <Col xs={24} sm={12} md={8} lg={6} key={artwork.id}>
-          <ArtworkCard artwork={artwork} />
-        </Col>
-      ))}
-    </Row>
-  );
+    return (
+        <Layout>
+            <Content>
+                <Card title="Recent Artworks">
+                    <ImageWall />
+                </Card>
+            </Content>
+        </Layout>
+    );
 };
 
 export default Gallery; 
