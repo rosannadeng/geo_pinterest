@@ -250,6 +250,24 @@ class ProfileView(LoginRequiredMixin, DetailView):
         context["artworks"] = self.object.user.artworks.all()
         return context
 
+class ProfileViewSet(ModelViewSet):
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        if self.action == "list":
+            return Profile.objects.filter(user=self.request.user)
+        username = self.kwargs.get("username")
+        if username:
+            return Profile.objects.filter(user__username=username)
+        return Profile.objects.none()
+
+    def get_object(self):
+        username = self.kwargs.get("username")
+        if not username:
+            return get_object_or_404(Profile, user=self.request.user)
+        return get_object_or_404(Profile, user__username=username)
+
 
 class ArtworkCreateView(LoginRequiredMixin, CreateView):
     model = Artwork
@@ -475,3 +493,6 @@ def upload_image(request):
         return Response(extracted_info)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
