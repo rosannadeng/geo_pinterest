@@ -1,6 +1,6 @@
 import React from 'react';
 import { Layout, Card } from 'antd';
-import ImageWall from '../Gallery/ImageWall';
+import ImageWall from './ImageWall';
 
 const { Sider } = Layout;
 

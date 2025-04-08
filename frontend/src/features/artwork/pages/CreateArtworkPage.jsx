@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import ImageUploader from '../components/ImageUploader';
 import api from '../../../services/api';
 import dayjs from 'dayjs';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -12,6 +13,7 @@ const CreateArtworkPage = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [imageInfo, setImageInfo] = useState(null);
+  const { user } = useAuth();
 
   const handleImageUploaded = (info) => {
     setImageInfo(info);
@@ -19,6 +21,8 @@ const CreateArtworkPage = () => {
       medium: info.medium,
       creation_date: info.creation_date ? dayjs(info.creation_date) : null,
       location_name: info.location_name,
+      latitude: info.latitude || '',
+      longitude: info.longitude || '',
     });
   };
 
@@ -26,17 +30,36 @@ const CreateArtworkPage = () => {
     try {
       const formData = new FormData();
       formData.append('title', values.title);
-      formData.append('description', values.description);
+      formData.append('description', values.description || '');
       formData.append('medium', values.medium);
       formData.append('creation_date', values.creation_date.format('YYYY-MM-DD'));
       formData.append('location_name', values.location_name);
-      formData.append('image', imageInfo.image_url);
-
-      const response = await api.post('/artwork/create/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      
+      if (values.latitude) {
+        formData.append('latitude', values.latitude);
+      }
+      if (values.longitude) {
+        formData.append('longitude', values.longitude);
+      }
+      
+      let response;
+      if (imageInfo && imageInfo.artwork_id) {
+        response = await api.put(`/artwork/${imageInfo.artwork_id}/update`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'X-CSRFToken': getCookie('csrftoken'),
+          },
+          withCredentials: true,
+        });
+      } else {
+        response = await api.post('/artwork/create', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'X-CSRFToken': getCookie('csrftoken'),
+          },
+          withCredentials: true,
+        });
+      }
 
       if (response.data) {
         message.success('Artwork created successfully');
@@ -44,7 +67,23 @@ const CreateArtworkPage = () => {
       }
     } catch (error) {
       message.error('Failed to create artwork');
+      console.error('Error:', error);
     }
+  };
+
+  const getCookie = (name) => {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
   };
 
   return (
@@ -101,6 +140,26 @@ const CreateArtworkPage = () => {
           rules={[{ required: true, message: 'Please input the location!' }]}
         >
           <Input />
+        </Form.Item>
+
+        <Form.Item
+          name="latitude"
+          label="Latitude"
+          rules={[
+            { type: 'number', message: 'Latitude must be a number!' }
+          ]}
+        >
+          <Input type="number" step="any" placeholder="Optional" />
+        </Form.Item>
+
+        <Form.Item
+          name="longitude"
+          label="Longitude"
+          rules={[
+            { type: 'number', message: 'Longitude must be a number!' }
+          ]}
+        >
+          <Input type="number" step="any" placeholder="Optional" />
         </Form.Item>
 
         <Form.Item>

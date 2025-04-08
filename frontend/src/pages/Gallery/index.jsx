@@ -5,7 +5,7 @@ import ArtworkCard from '../../common/ArtworkCard';
 
 import { Layout } from 'antd';
 
-import ImageWall from '../../components/Gallery/ImageWall';
+import ImageWall from '../../common/ImageWall';
 
 const { Content } = Layout;
 
