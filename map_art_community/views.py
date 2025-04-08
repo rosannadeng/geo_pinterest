@@ -216,14 +216,6 @@ def profile_setup(request):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-<<<<<<< HEAD
-class ProfileViewSet(ModelViewSet):
-    queryset = Profile.objects.all()
-    serializer_class = ProfileSerializer
-    permission_classes = [IsAuthenticated]
-    lookup_field = "user__username"
-    lookup_url_kwarg = "username"
-=======
 @login_required
 def map_view(request):
     artworks = Artwork.objects.all()
@@ -275,7 +267,6 @@ class ArtworkUpdateView(LoginRequiredMixin, UpdateView):
     form_class = ArtworkForm
     template_name = "map_art_community/artwork_form.html"
     success_url = reverse_lazy("home")
->>>>>>> 74c7bee74034f83c085238b347095160ea532df2
 
     def get_queryset(self):
         if self.action == "list":
