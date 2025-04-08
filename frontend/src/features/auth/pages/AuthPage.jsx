@@ -9,7 +9,6 @@ import {
   message,
 } from "antd";
 import {
-  GoogleOutlined,
   LockOutlined,
   UserOutlined,
   MailOutlined,
@@ -18,7 +17,6 @@ import GoogleLoginButton from "../components/GoogleLoginButton";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import auth from "../auth";
-
 const { Title } = Typography;
 
 const AuthPage = () => {

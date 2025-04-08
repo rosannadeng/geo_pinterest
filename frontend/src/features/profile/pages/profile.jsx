@@ -47,7 +47,7 @@ const ProfilePage = () => {
     return <Spin size="large" />;
   }
 
-  const isOwner = user?.username === username;
+  const isOwner = user?.user?.username === username;
 
   return (
     <div style={{ padding: "24px" }}>

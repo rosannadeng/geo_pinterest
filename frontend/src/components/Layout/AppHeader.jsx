@@ -8,7 +8,7 @@ const { Header } = Layout;
 
 const AppHeader = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
 
   const menuItems = [
     { 
@@ -23,7 +23,7 @@ const AppHeader = () => {
     },
     {
       key: 'profile',
-      label: <Link to="/profile">Profile</Link>,
+      label: <Link to={`/profile/${user?.user?.username}`}>Profile</Link>,
       icon: <UserOutlined />
     }
   ];
