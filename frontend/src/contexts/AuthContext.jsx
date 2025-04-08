@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import auth from '../features/auth/auth.js';
+import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 const AuthContext = createContext(null);
 
@@ -19,15 +22,33 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const userData = await auth.getCurrentUser();
-      setUser(userData);
-      setIsAuthenticated(true);
+      const token = localStorage.getItem('token');
+      if (token) {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+          setIsAuthenticated(true);
+        } else {
+          const response = await axios.get(`${API_URL}/user`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+          setUser(response.data);
+          setIsAuthenticated(true);
+          localStorage.setItem('user', JSON.stringify(response.data));
+        }
+      } else {
+        setIsAuthenticated(false);
+        setUser(null);
+      }
     } catch (error) {
       console.error('Auth check error:', error);
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
       setIsAuthenticated(false);
       setUser(null);
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
     } finally {
       setLoading(false);
     }

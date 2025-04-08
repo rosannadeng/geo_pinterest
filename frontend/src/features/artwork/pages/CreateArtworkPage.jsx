@@ -3,6 +3,7 @@ import { Form, Input, DatePicker, Select, Button, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import ImageUploader from '../components/ImageUploader';
 import api from '../../../services/api';
+import dayjs from 'dayjs';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -16,7 +17,7 @@ const CreateArtworkPage = () => {
     setImageInfo(info);
     form.setFieldsValue({
       medium: info.medium,
-      creation_date: info.creation_date ? new Date(info.creation_date) : null,
+      creation_date: info.creation_date ? dayjs(info.creation_date) : null,
       location_name: info.location_name,
     });
   };
