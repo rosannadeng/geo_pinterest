@@ -6,9 +6,7 @@ from .models import Profile, Artwork
 
 class LoginForm(forms.Form):
     username = forms.CharField(label="Username", max_length=20)
-    password = forms.CharField(
-        label="Password", max_length=20, widget=forms.PasswordInput
-    )
+    password = forms.CharField(label="Password", max_length=20, widget=forms.PasswordInput)
 
     def login_valid(self):
         if not self.is_valid():
@@ -24,12 +22,8 @@ class LoginForm(forms.Form):
 
 class RegisterForm(forms.Form):
     username = forms.CharField(label="Username", max_length=20)
-    password = forms.CharField(
-        label="Password", max_length=20, widget=forms.PasswordInput
-    )
-    confirm_password = forms.CharField(
-        label="Confirm Password", max_length=20, widget=forms.PasswordInput
-    )
+    password = forms.CharField(label="Password", max_length=20, widget=forms.PasswordInput)
+    confirm_password = forms.CharField(label="Confirm Password", max_length=20, widget=forms.PasswordInput)
     firstname = forms.CharField(label="First Name", max_length=20)
     lastname = forms.CharField(label="Last Name", max_length=20)
     email = forms.EmailField(label="Email", max_length=50)
@@ -64,7 +58,7 @@ class RegisterForm(forms.Form):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ["profile_picture", "bio", "location"]
+        fields = ["profile_picture", "bio", "website"]
         widgets = {
             "bio": forms.Textarea(
                 attrs={
@@ -73,8 +67,11 @@ class ProfileForm(forms.ModelForm):
                     "placeholder": "Tell us about yourself...",
                 }
             ),
-            "location": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "Where are you based?"}
+            "website": forms.URLInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "https://example.com",
+                }
             ),
             "profile_picture": forms.FileInput(attrs={"class": "form-control"}),
         }
