@@ -23,21 +23,28 @@ const { Title } = Typography;
 
 const AuthPage = () => {
   const [loading, setLoading] = useState(false);
+  const [registerErrors, setRegisterErrors] = useState({});
+  const [loginErrors, setLoginErrors] = useState({});
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const onLogin = async (values) => {
     setLoading(true);
+    setLoginErrors({}); // Clear previous errors
     try {
       const success = await login(values);
       if (success) {
         message.success("Login successful");
         navigate("/gallery");
       } else {
-        message.error("Login failed, please check your username and password");
+        setLoginErrors({ general: "Login failed, please check your username and password" });
       }
     } catch (error) {
-      message.error("Network error, please try again later");
+      if (error.response?.data?.errors) {
+        setLoginErrors(error.response.data.errors);
+      } else {
+        setLoginErrors({ general: "Network error, please try again later" });
+      }
     } finally {
       setLoading(false);
     }
@@ -45,9 +52,10 @@ const AuthPage = () => {
 
   const onRegister = async (values) => {
     setLoading(true);
+    setRegisterErrors({}); // Clear previous errors
     try {
       if (!values.username || !values.email || !values.password) {
-        message.error("Please fill in all fields");
+        setRegisterErrors({ general: "Please fill in all fields" });
         return;
       }
 
@@ -56,8 +64,8 @@ const AuthPage = () => {
         email: values.email,
         password: values.password,
         confirm_password: values.password, 
-        firstname: values.username, 
-        lastname: "" 
+        firstname: values.firstname, 
+        lastname: values.lastname 
       };
 
       const response = await auth.register(registerData);
@@ -69,7 +77,13 @@ const AuthPage = () => {
       }
     } catch (error) {
       console.error("Registration error:", error);
-      message.error(error.response?.data?.error || "Registration failed");
+      if (error.response?.data?.errors) {
+        setRegisterErrors(error.response.data.errors);
+      } else if (error.response?.data?.error) {
+        setRegisterErrors({ general: error.response.data.error });
+      } else {
+        setRegisterErrors({ general: "Registration failed, please try again" });
+      }
     } finally {
       setLoading(false);
     }
@@ -82,6 +96,15 @@ const AuthPage = () => {
       </Title>
       <Tabs defaultActiveKey="login">
         <Tabs.TabPane tab="Login" key="login">
+          {Object.keys(loginErrors).length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              {Object.entries(loginErrors).map(([field, error]) => (
+                <div key={field} style={{ color: 'red', marginBottom: 8 }}>
+                  {field === 'general' ? error : `${field}: ${error}`}
+                </div>
+              ))}
+            </div>
+          )}
           <Form onFinish={onLogin}>
             <Form.Item
               name="username"
@@ -105,6 +128,15 @@ const AuthPage = () => {
           <GoogleLoginButton />
         </Tabs.TabPane>
         <Tabs.TabPane tab="Register" key="register">
+          {Object.keys(registerErrors).length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              {Object.entries(registerErrors).map(([field, error]) => (
+                <div key={field} style={{ color: 'red', marginBottom: 8 }}>
+                  {field === 'general' ? error : `${field}: ${error}`}
+                </div>
+              ))}
+            </div>
+          )}
           <Form onFinish={onRegister}>
             <Form.Item
               name="username"
