@@ -51,6 +51,13 @@ def login_view(request):
     if request.method == "POST":
         username = request.data.get("username")
         password = request.data.get("password")
+
+        # Check if username and password are provided
+        if not username or not password:
+            return Response(
+                {"errors": {"general": "Username and password are required"}}, status=status.HTTP_400_BAD_REQUEST
+            )
+
         user = authenticate(username=username, password=password)
 
         if user is not None:
@@ -58,8 +65,10 @@ def login_view(request):
             profile = get_object_or_404(Profile, user=user)
             serializer = ProfileSerializer(profile)
             return Response({"access": str(refresh.access_token), "refresh": str(refresh), "user": serializer.data})
-        return Response({"error": "Invalid username or password"}, status=status.HTTP_401_UNAUTHORIZED)
-    return Response({"error": "Method not allowed"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        return Response({"errors": {"general": "Invalid username or password"}}, status=status.HTTP_401_UNAUTHORIZED)
+
+    return Response({"errors": {"general": "Method not allowed"}}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class TokenObtainPairView(APIView):
@@ -122,7 +131,11 @@ def register_view(request):
                 print("Registration error:", str(e))
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         print("Form errors:", form.errors)
-        return Response({"error": form.errors}, status=status.HTTP_400_BAD_REQUEST)
+        # Convert form errors to a more user-friendly format
+        error_messages = {}
+        for field, errors in form.errors.items():
+            error_messages[field] = errors[0]  # Take only the first error message
+        return Response({"errors": error_messages}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET"])
