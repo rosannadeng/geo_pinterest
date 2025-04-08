@@ -4,6 +4,7 @@ __pycache__/
 *.log
 local_settings.py
 db.sqlite3
+<<<<<<< HEAD
 db.sqlite3-journal
 media/
 static/
@@ -25,11 +26,20 @@ Thumbs.db
 
 # Project specific
 temp/
+=======
+0*.py
+.DS_Store
+venv/
+.env
+.vscode
+myvenv/
+>>>>>>> 74c7bee74034f83c085238b347095160ea532df2
 artworks/
 profile_pictures/
 config.ini
 avatars/
 get_random_key.py
+<<<<<<< HEAD
 specification.pdf
 
 migrations/
@@ -49,3 +59,6 @@ frontend/yarn-error.log*
 frontend/package-lock.json
 
 */settings.json
+=======
+node_modules/
+>>>>>>> 74c7bee74034f83c085238b347095160ea532df2

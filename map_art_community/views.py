@@ -9,6 +9,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth.models import User
 from .models import Profile, Artwork
 import mimetypes
+import json
 from .forms import LoginForm, RegisterForm, ProfileForm, ArtworkForm
 from social_core.exceptions import AuthFailed
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -215,12 +216,66 @@ def profile_setup(request):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+<<<<<<< HEAD
 class ProfileViewSet(ModelViewSet):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = "user__username"
     lookup_url_kwarg = "username"
+=======
+@login_required
+def map_view(request):
+    artworks = Artwork.objects.all()
+    artworks_dicts = []
+    for artwork in artworks:
+        artwork_dict = {
+            "title": artwork.title,
+            "description": artwork.description,
+            "image": artwork.image.url,
+            "medium": artwork.medium,
+            "creation_date": artwork.creation_date,
+            "location_name": artwork.location_name,
+            "latitude": artwork.latitude,
+            "longitude": artwork.longitude,
+            "likes": artwork.likes.count(),
+        }
+        artworks_dicts.append(artwork_dict)
+    return render(request, "map_art_community/map.html", {"artworks": artworks_dicts})
+
+
+class ProfileView(LoginRequiredMixin, DetailView):
+    model = Profile
+    template_name = "map_art_community/profile.html"
+    context_object_name = "profile"
+
+    def get_object(self):
+        username = self.kwargs.get("username", self.request.user.username)
+        return get_object_or_404(Profile, user__username=username)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["artworks"] = self.object.user.artworks.all()
+        return context
+
+
+class ArtworkCreateView(LoginRequiredMixin, CreateView):
+    model = Artwork
+    form_class = ArtworkForm
+    template_name = "map_art_community/artwork_form.html"
+    success_url = reverse_lazy("home")
+
+    def form_valid(self, form):
+        form.instance.artist = self.request.user
+        return super().form_valid(form)
+
+
+class ArtworkUpdateView(LoginRequiredMixin, UpdateView):
+    model = Artwork
+    form_class = ArtworkForm
+    template_name = "map_art_community/artwork_form.html"
+    success_url = reverse_lazy("home")
+>>>>>>> 74c7bee74034f83c085238b347095160ea532df2
 
     def get_queryset(self):
         if self.action == "list":
