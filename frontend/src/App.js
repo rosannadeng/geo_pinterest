@@ -21,7 +21,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/gallery" element={<Gallery />} />
-              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/profile/:username" element={<ProfilePage />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/map" element={<MapPage />} />
               <Route path="/oauth/complete/google-oauth2" element={<OAuthCallback />} />

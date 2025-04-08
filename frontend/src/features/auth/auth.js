@@ -3,8 +3,6 @@ import Cookies from "js-cookie";
 
 const csrfToken = Cookies.get("csrftoken");
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-const FRONTEND_URL = process.env.REACT_APP_FRONTEND_URL || 'http://localhost:3000';
-
 const auth = {
   login: async (credentials) => {
     try {
@@ -12,6 +10,12 @@ const auth = {
       if (response.data) {
         localStorage.setItem('token', response.data.access);
         localStorage.setItem('refreshToken', response.data.refresh);
+        const userResponse = await axios.get(`${API_URL}/user`, {
+          headers: {
+            Authorization: `Bearer ${response.data.access}`
+          }
+        });
+        localStorage.setItem('user', JSON.stringify(userResponse.data));
         return true;
       }
       return false;
