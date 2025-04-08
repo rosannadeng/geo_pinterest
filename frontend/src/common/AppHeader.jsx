@@ -2,7 +2,7 @@ import React from 'react';
 import { Layout, Menu, AutoComplete, Button } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
 import { PictureOutlined, HomeOutlined, UserOutlined, LoginOutlined, UserAddOutlined } from '@ant-design/icons';
-import { useAuth } from '../../contexts/AuthContext.jsx';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 const { Header } = Layout;
 

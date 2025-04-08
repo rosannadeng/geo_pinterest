@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Profile(models.Model):
@@ -42,6 +43,8 @@ class Artwork(models.Model):
     creation_date = models.DateField()
     upload_date = models.DateTimeField(auto_now_add=True)
     location_name = models.CharField(max_length=200)
+    latitude = models.FloatField(validators=[MinValueValidator(-90), MaxValueValidator(90)], null=True, blank=True)
+    longitude = models.FloatField(validators=[MinValueValidator(-180), MaxValueValidator(180)], null=True, blank=True)
     likes = models.ManyToManyField(User, related_name="liked_artworks", blank=True)
     views = models.PositiveIntegerField(default=0)
 

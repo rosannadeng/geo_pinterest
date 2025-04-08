@@ -1,6 +1,6 @@
 import React from 'react';
 import { Layout } from 'antd';
-import AppSider from '../../components/Layout/AppSider';
+import AppSider from '../../common/AppSider';
 
 const { Content } = Layout;
 

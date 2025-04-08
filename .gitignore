@@ -21,6 +21,7 @@ myvenv/
 *.swp
 *.swo
 .DS_Store
+Thumbs.db
 
 # Project specific
 temp/
@@ -46,3 +47,5 @@ frontend/.yarn
 frontend/yarn-debug.log*
 frontend/yarn-error.log*
 frontend/package-lock.json
+
+*/settings.json

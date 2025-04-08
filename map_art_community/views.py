@@ -42,9 +42,34 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class ArtworkSerializer(serializers.ModelSerializer):
+    image_url = serializers.CharField(required=False, write_only=True)
+    artist = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = Artwork
-        fields = ["id", "title", "description", "image", "location", "artist", "upload_date"]
+        fields = [
+            "id",
+            "title",
+            "description",
+            "image",
+            "image_url",
+            "medium",
+            "creation_date",
+            "upload_date",
+            "location_name",
+            "latitude",
+            "longitude",
+            "artist",
+            "likes",
+            "views",
+        ]
+        extra_kwargs = {"image": {"required": False}}
+
+    def create(self, validated_data):
+        image_url = validated_data.pop("image_url", None)
+        if image_url:
+            validated_data["image"] = image_url
+        return super().create(validated_data)
 
 
 @api_view(["POST"])
@@ -133,11 +158,7 @@ def register_view(request):
                 print("Registration error:", str(e))
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         print("Form errors:", form.errors)
-        # Convert form errors to a more user-friendly format
-        error_messages = {}
-        for field, errors in form.errors.items():
-            error_messages[field] = errors[0]  # Take only the first error message
-        return Response({"errors": error_messages}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET"])
@@ -202,12 +223,21 @@ class ProfileViewSet(ModelViewSet):
     lookup_url_kwarg = "username"
 
     def get_queryset(self):
-        username = self.kwargs.get("username", self.request.user.username)
-        return Profile.objects.filter(user__username=username)
+        if self.action == "list":
+            return Profile.objects.filter(user=self.request.user)
+        username = self.kwargs.get("username")
+        if username:
+            return Profile.objects.filter(user__username=username)
+        return Profile.objects.none()
 
     def get_object(self):
-        username = self.kwargs.get("username", self.request.user.username)
-        return get_object_or_404(Profile, user__username=username)
+        username = self.kwargs.get("username")
+        if not username:
+            return get_object_or_404(Profile, user=self.request.user)
+        try:
+            return Profile.objects.get(user__username=username)
+        except Profile.DoesNotExist:
+            raise Http404(f"Profile for user {username} does not exist")
 
     def update(self, request, *args, **kwargs):
         try:
@@ -237,6 +267,35 @@ class ArtworkViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(artist=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            data = request.data.copy()
+
+            update_fields = [
+                "title",
+                "description",
+                "medium",
+                "creation_date",
+                "location_name",
+                "latitude",
+                "longitude",
+            ]
+
+            for field in update_fields:
+                if field in data:
+                    value = data[field]
+                    if value is not None and value != "":
+                        setattr(instance, field, value)
+
+            instance.save(update_fields=update_fields)
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except Artwork.DoesNotExist:
+            raise serializers.ValidationError({"error": "Artwork not found"})
+        except Exception as e:
+            raise serializers.ValidationError({"error": str(e)})
 
 
 class GalleryView(APIView):
@@ -342,26 +401,31 @@ def upload_image(request):
         if not image.content_type.startswith("image/"):
             return Response({"error": "File is not an image"}, status=status.HTTP_400_BAD_REQUEST)
 
-        temp_path = os.path.join(settings.MEDIA_ROOT, "temp", image.name)
-        os.makedirs(os.path.dirname(temp_path), exist_ok=True)
+        artwork = Artwork.objects.create(
+            artist=request.user,
+            title="Temporary Title",
+            description="",
+            medium="DIG",
+            creation_date=datetime.now().date(),
+            location_name="Unknown Location",
+        )
 
-        with open(temp_path, "wb+") as destination:
-            for chunk in image.chunks():
-                destination.write(chunk)
+        filename = f"{artwork.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{image.name}"
+        artwork.image.save(filename, image)
+        artwork.save()
 
-        meta = _extract_metadata(temp_path)
+        meta = _extract_metadata(artwork.image.path)
 
-        # TODO: Add longitude and latitude
         extracted_info = {
+            "artwork_id": artwork.id,
             "medium": "DIG",
             "creation_date": meta["date"],
             "latitude": meta["lat"],
             "longitude": meta["lng"],
-            "location_name": f"({meta['lat']}, {meta['lng']})",
-            "image_url": f"/media/temp/{image.name}",
+            "location_name": f"({meta['lat']}, {meta['lng']})" if meta["lat"] and meta["lng"] else "Unknown Location",
+            "image_url": artwork.image.url,
         }
 
-        os.remove(temp_path)
         return Response(extracted_info)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
