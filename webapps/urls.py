@@ -41,6 +41,7 @@ urlpatterns = [
         views.ProfileViewSet.as_view({"get": "retrieve", "put": "update"}),
         name="profile_detail",
     ),
+<<<<<<< HEAD
     path("profile/setup", views.profile_setup, name="profile_setup"),
     path("profile/<str:username>/photo", views.get_photo, name="profile_photo"),
     path("artwork", views.ArtworkViewSet.as_view({"get": "list"}), name="artwork_list"),
@@ -53,6 +54,11 @@ urlpatterns = [
     path("oauth/login/google-oauth2", views.google_oauth, name="google_oauth"),
     path("oauth/complete/google-oauth2", views.oauth_complete, name="oauth_complete"),
     path("oauth/error", views.social_auth_error, name="social_auth_error"),
+=======
+    path("map", views.map_view, name="map"),
+    path("gallery", views.GalleryView.as_view(), name="gallery"),
+    path('oauth/', include('social_django.urls', namespace='social')),
+>>>>>>> 74c7bee74034f83c085238b347095160ea532df2
 ]
 
 if settings.DEBUG:

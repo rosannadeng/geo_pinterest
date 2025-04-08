@@ -67,12 +67,16 @@ class ProfileForm(forms.ModelForm):
                     "placeholder": "Tell us about yourself...",
                 }
             ),
+<<<<<<< HEAD
             "website": forms.URLInput(
                 attrs={
                     "class": "form-control",
                     "placeholder": "https://example.com",
                 }
             ),
+=======
+            "location": forms.TextInput(attrs={"class": "form-control", "placeholder": "Where are you based?"}),
+>>>>>>> 74c7bee74034f83c085238b347095160ea532df2
             "profile_picture": forms.FileInput(attrs={"class": "form-control"}),
         }
 
@@ -87,6 +91,8 @@ class ArtworkForm(forms.ModelForm):
             "medium",
             "creation_date",
             "location_name",
+            "latitude",
+            "longitude",
         ]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 4}),
