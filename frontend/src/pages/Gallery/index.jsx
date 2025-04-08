@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card } from 'antd';
-import ArtworkCard from '../../components/Gallery/ArtworkCard';
+import ArtworkCard from '../../common/ArtworkCard';
 
 
 import { Layout } from 'antd';
