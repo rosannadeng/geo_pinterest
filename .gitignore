@@ -1,14 +1,64 @@
+# Python
 *.pyc
+__pycache__/
+*.log
+local_settings.py
 db.sqlite3
+<<<<<<< HEAD
+db.sqlite3-journal
+media/
+static/
+
+# Virtual Environment
+venv/
+ENV/
+env/
+myvenv/
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Project specific
+temp/
+=======
 0*.py
 .DS_Store
 venv/
 .env
 .vscode
 myvenv/
+>>>>>>> 74c7bee74034f83c085238b347095160ea532df2
 artworks/
 profile_pictures/
 config.ini
 avatars/
 get_random_key.py
+<<<<<<< HEAD
+specification.pdf
+
+migrations/
+
+# Frontend
+frontend/node_modules
+frontend/.env
+frontend/build
+frontend/.DS_Store
+frontend/.next
+frontend/coverage
+frontend/.npm
+frontend/.cache
+frontend/.yarn
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/package-lock.json
+
+*/settings.json
+=======
 node_modules/
+>>>>>>> 74c7bee74034f83c085238b347095160ea532df2
