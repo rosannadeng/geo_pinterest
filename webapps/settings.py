@@ -13,13 +13,14 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 import configparser
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Read config.ini
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read("config.ini")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -30,7 +31,7 @@ SECRET_KEY = "django-insecure-q+&(ha2sc^9dw4w4z790*6-3mt5$fv2p+i7+^3d!0x0hfa89gt
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 
 # Application definition
@@ -44,10 +45,14 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "map_art_community",
     "social_django",
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -133,54 +138,103 @@ MAX_UPLOAD_SIZE = 2500000
 LOGIN_URL = "/login"
 
 AUTHENTICATION_BACKENDS = (
-    'social_core.backends.google.GoogleOAuth2',
-    'django.contrib.auth.backends.ModelBackend',
+    "social_core.backends.google.GoogleOAuth2",
+    "django.contrib.auth.backends.ModelBackend",
 )
 
 # Social Auth settings
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config.get('google_oauth', 'client_id', fallback='')
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config.get('google_oauth', 'client_secret', fallback='')
-SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = 'http://localhost:8000/oauth/complete/google-oauth2/'
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config.get("google_oauth", "client_id", fallback="")
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config.get("google_oauth", "client_secret", fallback="")
+SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = (
+    os.getenv("FRONTEND_URL", "http://localhost:3000") + "/oauth/complete/google-oauth2"
+)
 
 # Additional Social Auth settings
-SOCIAL_AUTH_URL_NAMESPACE = 'social'
+SOCIAL_AUTH_URL_NAMESPACE = "social"
 SOCIAL_AUTH_GOOGLE_OAUTH2_AUTH_EXTRA_ARGUMENTS = {
-    'access_type': 'offline',
-    'prompt': 'consent',
+    "access_type": "offline",
+    "prompt": "consent",
 }
 
 SOCIAL_AUTH_DEBUG = True
 SOCIAL_AUTH_RAISE_EXCEPTIONS = True
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/profile'
-SOCIAL_AUTH_LOGIN_ERROR_URL = '/login'
-SOCIAL_AUTH_NEW_USER_REDIRECT_URL = '/profile/setup'
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = os.getenv("FRONTEND_URL", "http://localhost:3000") + "/profile/{username}"
+SOCIAL_AUTH_LOGIN_ERROR_URL = os.getenv("FRONTEND_URL", "http://localhost:3000") + "/auth"
+SOCIAL_AUTH_NEW_USER_REDIRECT_URL = os.getenv("FRONTEND_URL", "http://localhost:3000") + "/profile/setup"
 
 
 # Security settings
 SOCIAL_AUTH_STATE_LENGTH = 32
 SOCIAL_AUTH_SANITIZE_REDIRECTS = True
-SOCIAL_AUTH_REDIRECT_IS_HTTPS = False  
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = False
 SOCIAL_AUTH_GOOGLE_OAUTH2_USE_UNIQUE_USER_ID = True
 SOCIAL_AUTH_GOOGLE_OAUTH2_IGNORE_DEFAULT_SCOPE = True
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
-    'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.profile',
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/userinfo.profile",
 ]
 
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_URL = 'logout'
-LOGOUT_REDIRECT_URL = 'login'
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_URL = "logout"
+LOGOUT_REDIRECT_URL = "login"
 
 # Social Auth Pipeline
 SOCIAL_AUTH_PIPELINE = (
-    'social_core.pipeline.social_auth.social_details',
-    'social_core.pipeline.social_auth.social_uid',
-    'social_core.pipeline.social_auth.auth_allowed',
-    'social_core.pipeline.social_auth.social_user',
-    'social_core.pipeline.user.get_username',
-    'social_core.pipeline.user.create_user',
-    'social_core.pipeline.social_auth.associate_user',
-    'social_core.pipeline.social_auth.load_extra_data',
-    'social_core.pipeline.user.user_details',
-    'map_art_community.pipeline.create_profile',
+    "social_core.pipeline.social_auth.social_details",
+    "social_core.pipeline.social_auth.social_uid",
+    "social_core.pipeline.social_auth.auth_allowed",
+    "social_core.pipeline.social_auth.social_user",
+    "social_core.pipeline.user.get_username",
+    "social_core.pipeline.user.create_user",
+    "social_core.pipeline.social_auth.associate_user",
+    "social_core.pipeline.social_auth.load_extra_data",
+    "social_core.pipeline.user.user_details",
+    "map_art_community.pipeline.create_profile",
 )
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
+
+# CSRF settings
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_HTTPONLY = False
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_DOMAIN = None
+
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]

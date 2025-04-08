@@ -20,27 +20,33 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 import map_art_community.views as views
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r"profile", views.ProfileViewSet, basename="profile")
+router.register(r"artwork", views.ArtworkViewSet, basename="artwork")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", views.ArtworkCreateView.as_view(), name="home"),
+    path("", views.GalleryView.as_view(), name="home"),
     path("register", views.register_view, name="register"),
+    path("token", views.TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("token/refresh", views.TokenRefreshView.as_view(), name="token_refresh"),
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
-    path("profile", views.ProfileView.as_view(), name="profile"),
-    path("profile/<str:username>", views.ProfileView.as_view(), name="user_profile"),
+    path("user", views.UserView.as_view(), name="user"),
+    path("profile", views.ProfileViewSet.as_view({"get": "list"}), name="profile"),
+    path("profile/<str:username>/", views.ProfileViewSet.as_view({"get": "retrieve", "put": "update"}), name="profile"),
     path("profile/setup", views.profile_setup, name="profile_setup"),
-    path("artwork/create", views.ArtworkCreateView.as_view(), name="artwork_create"),
-    path(
-        "artwork/<int:pk>/update",
-        views.ArtworkUpdateView.as_view(),
-        name="artwork_update",
-    ),
-
+    path("profile/<str:username>/photo", views.get_photo, name="profile_photo"),
+    path("artwork/create", views.ArtworkViewSet.as_view({"post": "create"}), name="artwork_create"),
+    path("artwork/<int:pk>/update", views.ArtworkViewSet.as_view({"put": "update"}), name="artwork_update"),
+    path("artwork/upload-image/", views.upload_image, name="upload_image"),
     path("gallery", views.GalleryView.as_view(), name="gallery"),
-
-    path('oauth/', include('social_django.urls', namespace='social')),
-
+    path("oauth/", include("social_django.urls", namespace="social")),
+    path("oauth/login/google-oauth2", views.google_oauth, name="google_oauth"),
+    path("oauth/complete/google-oauth2", views.oauth_complete, name="oauth_complete"),
+    path("oauth/error", views.social_auth_error, name="social_auth_error"),
 ]
 
 if settings.DEBUG:

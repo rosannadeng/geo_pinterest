@@ -1,11 +1,15 @@
 import React from 'react';
-import { Layout, Menu, AutoComplete } from 'antd';
-import { Link } from 'react-router-dom';
-import { PictureOutlined, HomeOutlined, UserOutlined } from '@ant-design/icons';
+import { Layout, Menu, AutoComplete, Button } from 'antd';
+import { Link, useNavigate } from 'react-router-dom';
+import { PictureOutlined, HomeOutlined, UserOutlined, LoginOutlined, UserAddOutlined } from '@ant-design/icons';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 
 const { Header } = Layout;
 
 const AppHeader = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated, logout } = useAuth();
+
   const menuItems = [
     { 
       key: 'gallery',
@@ -23,6 +27,11 @@ const AppHeader = () => {
       icon: <UserOutlined />
     }
   ];
+
+  const handleLogout = () => {
+    logout();
+    navigate('/auth');
+  };
 
   return (
     <Header 
@@ -54,16 +63,32 @@ const AppHeader = () => {
       </div>
 
       {/* right */}
-      <Menu 
-        mode="horizontal" 
-        items={menuItems}
-        style={{ 
-          background: '#fff',
-          border: 'none',
-          flex: 'none',
-          marginLeft: 'auto'
-        }} 
-      />
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <Menu 
+          mode="horizontal" 
+          items={menuItems}
+          style={{ border: 'none' }}
+        />
+        {isAuthenticated ? (
+          <Button 
+            type="text" 
+            icon={<UserOutlined />}
+            onClick={handleLogout}
+          >
+            Logout
+          </Button>
+        ) : (
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <Button 
+              type="text" 
+              icon={<LoginOutlined />}
+              onClick={() => navigate('/auth')}
+            >
+              Login
+            </Button>
+          </div>
+        )}
+      </div>
     </Header>
   );
 };

@@ -1,50 +1,131 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import DetailView, CreateView, UpdateView, ListView
 from django.contrib import messages
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.urls import reverse_lazy
 from django.contrib.auth.models import User
 from .models import Profile, Artwork
 import mimetypes
 from .forms import LoginForm, RegisterForm, ProfileForm, ArtworkForm
 from social_core.exceptions import AuthFailed
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
+from rest_framework.viewsets import ModelViewSet
+from rest_framework import serializers
+import os
+from django.views.decorators.csrf import csrf_exempt
+import requests
+from django.conf import settings
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "email"]
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+
+    class Meta:
+        model = Profile
+        fields = ["user", "bio", "profile_picture", "website"]
+
+
+class ArtworkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Artwork
+        fields = ["id", "title", "description", "image", "location", "artist", "upload_date"]
+
+
+@api_view(["POST"])
+@csrf_exempt
 def login_view(request):
     if request.method == "POST":
-        form = LoginForm(request.POST)
+        username = request.data.get("username")
+        password = request.data.get("password")
+        user = authenticate(username=username, password=password)
+
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            profile = get_object_or_404(Profile, user=user)
+            serializer = ProfileSerializer(profile)
+            return Response({"access": str(refresh.access_token), "refresh": str(refresh), "user": serializer.data})
+        return Response({"error": "Invalid username or password"}, status=status.HTTP_401_UNAUTHORIZED)
+    return Response({"error": "Method not allowed"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+class TokenObtainPairView(APIView):
+    @csrf_exempt
+    def post(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+        user = authenticate(username=username, password=password)
+
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            profile = get_object_or_404(Profile, user=user)
+            serializer = ProfileSerializer(profile)
+            return Response({"access": str(refresh.access_token), "refresh": str(refresh), "user": serializer.data})
+        return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class TokenRefreshView(APIView):
+    @csrf_exempt
+    def post(self, request):
+        refresh_token = request.data.get("refresh")
+        if not refresh_token:
+            return Response({"error": "Refresh token is required"}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            user = form.login_valid()
-            login(request, user)
-            return redirect("home")
-        except:
-            messages.error(request, "Invalid username or password")
-    else:
-        form = LoginForm()
-    return render(request, "map_art_community/login.html", {"form": form})
+            refresh = RefreshToken(refresh_token)
+            return Response({"access": str(refresh.access_token)})
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
 
+class UserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        profile = get_object_or_404(Profile, user=user)
+        serializer = ProfileSerializer(profile)
+        return Response(serializer.data)
+
+
+@api_view(["POST"])
+@csrf_exempt
 def register_view(request):
     if request.method == "POST":
-        form = RegisterForm(request.POST)
+        print("Received data:", request.data)
+        form = RegisterForm(request.data)
         if form.is_valid():
             try:
                 user = form.register_user()
-                login(request, user)
-                return redirect("profile_setup")
+                refresh = RefreshToken.for_user(user)
+                return Response(
+                    {
+                        "access": str(refresh.access_token),
+                        "refresh": str(refresh),
+                        "redirect_url": f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/auth",
+                    }
+                )
             except Exception as e:
-                messages.error(request, str(e))
-        else:
-            messages.error(request, "Please correct the errors below.")
-    else:
-        form = RegisterForm()
-    return render(request, "map_art_community/register.html", {"form": form})
+                print("Registration error:", str(e))
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        print("Form errors:", form.errors)
+        return Response({"error": form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
-@login_required
+@api_view(["GET"])
 def get_photo(request, username):
     user = get_object_or_404(User, username=username)
     profile = get_object_or_404(Profile, user=user)
@@ -62,75 +143,172 @@ def get_photo(request, username):
         raise Http404(f"Error reading profile picture: {str(e)}")
 
 
-@login_required
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def logout_view(request):
-    logout(request)
-    return redirect("login")
+    try:
+        refresh_token = request.data.get("refresh")
+        if refresh_token:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+        return Response({"message": "Successfully logged out"})
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-@login_required
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def profile_setup(request):
     if request.method == "POST":
-        form = ProfileForm(request.POST, request.FILES, instance=request.user.profile)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Profile updated successfully!")
-            return redirect("profile")
-    else:
-        form = ProfileForm(instance=request.user.profile)
-    return render(request, "map_art_community/profile_setup.html", {"form": form})
+        try:
+            profile = request.user.profile
+            if not profile:
+                profile = Profile.objects.create(user=request.user)
+
+            profile.bio = request.data.get("bio", "")
+            profile.website = request.data.get("website", "")
+
+            if "profile_picture" in request.FILES:
+                profile.profile_picture = request.FILES["profile_picture"]
+
+            profile.save()
+
+            serializer = ProfileSerializer(profile)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ProfileView(LoginRequiredMixin, DetailView):
-    model = Profile
-    template_name = "map_art_community/profile.html"
-    context_object_name = "profile"
+class ProfileViewSet(ModelViewSet):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "user__username"
+    lookup_url_kwarg = "username"
+
+    def get_queryset(self):
+        username = self.kwargs.get("username", self.request.user.username)
+        return Profile.objects.filter(user__username=username)
 
     def get_object(self):
         username = self.kwargs.get("username", self.request.user.username)
         return get_object_or_404(Profile, user__username=username)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["artworks"] = self.object.user.artworks.all()
-        return context
+    def update(self, request, *args, **kwargs):
+        try:
+            profile = self.get_object()
+
+            profile.bio = request.data.get("bio", profile.bio)
+            profile.website = request.data.get("website", profile.website)
+
+            if "profile_picture" in request.FILES:
+                profile.profile_picture = request.FILES["profile_picture"]
+
+            profile.save()
+
+            serializer = self.get_serializer(profile)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ArtworkCreateView(LoginRequiredMixin, CreateView):
-    model = Artwork
-    form_class = ArtworkForm
-    template_name = "map_art_community/artwork_form.html"
-    success_url = reverse_lazy("home")
-
-    def form_valid(self, form):
-        form.instance.artist = self.request.user
-        return super().form_valid(form)
-
-
-class ArtworkUpdateView(LoginRequiredMixin, UpdateView):
-    model = Artwork
-    form_class = ArtworkForm
-    template_name = "map_art_community/artwork_form.html"
-    success_url = reverse_lazy("home")
-
-    def get_queryset(self):
-        return Artwork.objects.filter(artist=self.request.user)
-
-
-
-class GalleryView(LoginRequiredMixin, ListView):
-    model = Artwork
-    template_name = "map_art_community/gallery.html"
-    context_object_name = "artworks"
-    paginate_by = 12
+class ArtworkViewSet(ModelViewSet):
+    queryset = Artwork.objects.all()
+    serializer_class = ArtworkSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Artwork.objects.all().order_by("-upload_date")
-    
-    
-    
-def social_auth_error(request):
-    messages.error(request, "Authentication failed. Please try again.")
-    return redirect('login')
 
- 
+    def perform_create(self, serializer):
+        serializer.save(artist=self.request.user)
+
+
+class GalleryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        artworks = Artwork.objects.all().order_by("-upload_date")
+        serializer = ArtworkSerializer(artworks, many=True)
+        return Response(serializer.data)
+
+
+def social_auth_error(request):
+    return Response({"error": "Authentication failed. Please try again."}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(["GET"])
+def oauth_complete(request):
+    if request.user.is_authenticated:
+        social = request.user.social_auth.get(provider="google-oauth2")
+        response = requests.get(
+            "https://www.googleapis.com/oauth2/v1/userinfo", params={"access_token": social.extra_data["access_token"]}
+        )
+        google_info = response.json()
+
+        email = google_info.get("email")
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            user = request.user
+            user.email = email
+            user.save()
+
+        refresh = RefreshToken.for_user(user)
+        profile = get_object_or_404(Profile, user=user)
+        serializer = ProfileSerializer(profile)
+
+        redirect_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
+        redirect_url += "/gallery"
+
+        return Response(
+            {
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "user": serializer.data,
+                "redirect_url": redirect_url,
+            }
+        )
+    return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(["GET"])
+def google_oauth(request):
+    return redirect("social:begin", backend="google-oauth2")
+
+
+@api_view(["GET"])
+def get_csrf_token(request):
+    return Response({"detail": "CSRF cookie set"})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def upload_image(request):
+    if "image" not in request.FILES:
+        return Response({"error": "No image provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        image = request.FILES["image"]
+        if not image.content_type.startswith("image/"):
+            return Response({"error": "File is not an image"}, status=status.HTTP_400_BAD_REQUEST)
+
+        temp_path = os.path.join(settings.MEDIA_ROOT, "temp", image.name)
+        os.makedirs(os.path.dirname(temp_path), exist_ok=True)
+
+        with open(temp_path, "wb+") as destination:
+            for chunk in image.chunks():
+                destination.write(chunk)
+
+        # TODO: extract_from_photo
+        extracted_info = {
+            "medium": "DIG",
+            "creation_date": "2024-04-07",
+            "location_name": "New York",
+            "image_url": f"/media/temp/{image.name}",
+        }
+
+        os.remove(temp_path)
+        return Response(extracted_info)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
