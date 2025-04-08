@@ -3,7 +3,7 @@ import { Layout } from 'antd';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MainLayout from './common/MainLayout.jsx';
 import Home from './pages/Home/index.jsx';
-import ProfilePage from './features/profile/pages/profile.jsx'; 
+import ProfilePage from './features/profile/pages/ProfilePage.jsx'; 
 import AuthPage from './features/auth/pages/AuthPage.jsx';
 import MapPage from './pages/Map/index.jsx';
 import OAuthCallback from './features/auth/components/OAuthCallback.jsx';
@@ -11,6 +11,7 @@ import { AuthProvider } from './contexts/AuthContext.jsx';
 import CreateArtworkPage from './features/artwork/pages/CreateArtworkPage.jsx';
 import GalleryPage from './features/gallery/pages/GalleryPage.jsx';
 import ArtworkDetailPage from './features/artwork/pages/ArtworkDetailPage.jsx';
+import ProfileEditPage from './features/profile/pages/ProfileEditPage.jsx';
 const { Content } = Layout;
 
 const App = () => {
@@ -23,6 +24,7 @@ const App = () => {
               <Route path="/" element={<Home />} />
               <Route path="/gallery" element={<GalleryPage />} />
               <Route path="/profile/:username" element={<ProfilePage />} />
+              <Route path="/profile/edit" element={<ProfileEditPage />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/map" element={<MapPage />} />
               <Route path="/oauth/complete/google-oauth2" element={<OAuthCallback />} />
