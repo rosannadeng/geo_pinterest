@@ -27,6 +27,7 @@ const ProfileCard = ({ profile, isOwner }) => {
                 icon={<EditOutlined />}
                 onClick={() => {
                   // Handle edit profile
+                  window.location.href = "/profile/edit";
                 }}
               >
                 Edit Profile
@@ -39,8 +40,11 @@ const ProfileCard = ({ profile, isOwner }) => {
         <Title level={4}>{profile.user.username}</Title>
         <Text type="secondary">{profile.bio || "No bio yet"}</Text>
         <Space direction="vertical" style={{ marginTop: "16px", width: "100%" }}>
-          <Text strong>Location:</Text>
-          <Text>{profile.location || "Not specified"}</Text>
+          {profile.website && (
+            <a href={profile.website} target="_blank" rel="noopener noreferrer">
+              <Text>{profile.website}</Text>
+            </a>
+          )}
         </Space>
       </div>
     </Card>
