@@ -23,6 +23,8 @@ import os
 from django.views.decorators.csrf import csrf_exempt
 import requests
 from django.conf import settings
+from PIL import Image
+from datetime import datetime
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -295,6 +297,40 @@ def get_csrf_token(request):
     return Response({"detail": "CSRF cookie set"})
 
 
+def _lat(GPSLatitudeRef, GPSLatitude):
+    lat = float(GPSLatitude[0]) + float(GPSLatitude[1]) / 60 + float(GPSLatitude[2]) / 3600
+    if GPSLatitudeRef != "N":
+        lat = -lat
+    return lat
+
+
+def _lng(GPSLongitudeRef, GPSLongitude):
+    lng = float(GPSLongitude[0]) + float(GPSLongitude[1]) / 60 + float(GPSLongitude[2]) / 3600
+    if GPSLongitudeRef != "E":
+        lng = -lng
+    return lng
+
+
+def _extract_metadata(image_path):
+    meta = {
+        "lat": None,
+        "lng": None,
+        "date": None,
+    }
+    image = Image.open(image_path)
+    exif_data = image._getexif()
+    if exif_data:
+        gps_info = exif_data.get(34853)
+        if gps_info:
+            meta["lat"] = _lat(gps_info[1], gps_info[2])
+            meta["lng"] = _lng(gps_info[3], gps_info[4])
+        date_info = exif_data.get(306)
+        if date_info:
+            dt = datetime.strptime(date_info, "%Y:%m:%d %H:%M:%S")
+            meta["date"] = dt.strftime("%Y-%m-%d")
+    return meta
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def upload_image(request):
@@ -313,11 +349,15 @@ def upload_image(request):
             for chunk in image.chunks():
                 destination.write(chunk)
 
-        # TODO: extract_from_photo
+        meta = _extract_metadata(temp_path)
+
+        # TODO: Add longitude and latitude
         extracted_info = {
             "medium": "DIG",
-            "creation_date": "2024-04-07",
-            "location_name": "New York",
+            "creation_date": meta["date"],
+            "latitude": meta["lat"],
+            "longitude": meta["lng"],
+            "location_name": f"({meta['lat']}, {meta['lng']})",
             "image_url": f"/media/temp/{image.name}",
         }
 
