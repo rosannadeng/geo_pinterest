@@ -4,4 +4,4 @@ Pillow>=11.1.0
 django-crispy-forms>=2.3
 python-dotenv>=1.0.1 
 social-auth-app-django
-django-cors-headers
+django-cors-headers0
