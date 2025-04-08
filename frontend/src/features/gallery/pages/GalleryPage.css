@@ -1,0 +1,11 @@
+.gallery-container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding: 24px;
+}
+
+@media (max-width: 768px) {
+  .gallery-container {
+    padding: 12px;
+  }
+} 
