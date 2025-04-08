@@ -38,10 +38,10 @@ urlpatterns = [
     path("profile", views.ProfileViewSet.as_view({"get": "list"}), name="profile_list"),
     path(
         "profile/<str:username>",
-        views.ProfileViewSet.as_view({"get": "retrieve", "put": "update"}),
+        views.ProfileViewSet.as_view({"get": "retrieve"}),
         name="profile_detail",
     ),
-    path("profile/setup", views.profile_setup, name="profile_setup"),
+    path("profile/<str:username>/edit", views.ProfileViewSet.as_view({"put": "update"}), name="profile_edit"),
     path("profile/<str:username>/photo", views.get_photo, name="profile_photo"),
     path("artwork", views.ArtworkViewSet.as_view({"get": "list"}), name="artwork_list"),
     path("artwork/create", views.ArtworkViewSet.as_view({"post": "create"}), name="artwork_create"),
