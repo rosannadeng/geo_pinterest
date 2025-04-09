@@ -1,0 +1,102 @@
+/* Container for the artwork card */
+.artwork-card-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+/* The artwork image */
+.artwork-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+/* Zoom effect on hover */
+.artwork-card-container:hover .artwork-image {
+  transform: scale(1.05);
+}
+
+/* Overlay that appears on hover */
+.artwork-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none; /* To make the overlay transparent to mouse events by default */
+}
+
+/* Show overlay on hover */
+.artwork-card-container:hover .artwork-overlay {
+  opacity: 1;
+  pointer-events: all; /* Enable mouse events when visible */
+}
+
+/* Artwork information section (top part) */
+.artwork-info {
+  max-height: 70%;
+  overflow: hidden;
+}
+
+/* Action buttons section (bottom part) */
+.artwork-actions {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Style for action icons */
+.action-icon {
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.action-icon:hover {
+  transform: scale(1.2);
+  color: #1890ff; /* Ant Design primary color */
+}
+
+/* Special style for the heart icon when active */
+.action-icon.ant-heart-filled {
+  color: #ff4d4f; /* Ant Design red color */
+}
+
+/* Like counter style */
+.like-container {
+  display: flex;
+  align-items: center;
+}
+
+.like-count {
+  color: white;
+  margin-left: 8px;
+  font-size: 14px;
+}
+
+/* For smaller screens */
+@media (max-width: 768px) {
+  .artwork-info {
+    max-height: 60%;
+  }
+  
+  .action-icon {
+    font-size: 18px;
+  }
+}
