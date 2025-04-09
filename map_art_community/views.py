@@ -438,11 +438,9 @@ def upload_image(request):
 
         extracted_info = {
             "artwork_id": artwork.id,
-            "medium": "DIG",
             "creation_date": meta["date"],
             "latitude": meta["lat"],
             "longitude": meta["lng"],
-            "location_name": f"({meta['lat']}, {meta['lng']})" if meta["lat"] and meta["lng"] else "Unknown Location",
             "image_url": artwork.image.url,
         }
 
