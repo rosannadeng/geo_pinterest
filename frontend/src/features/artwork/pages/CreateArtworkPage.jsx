@@ -43,8 +43,6 @@ const CreateArtworkPage = () => {
       medium: info.medium,
       creation_date: info.creation_date ? dayjs(info.creation_date) : null,
       location_name: info.location_name,
-      latitude: lat,
-      longitude: lng,
     });
   };
 
@@ -67,11 +65,9 @@ const CreateArtworkPage = () => {
       formData.append('creation_date', values.creation_date.format('YYYY-MM-DD'));
       formData.append('location_name', values.location_name);
 
-      if (values.latitude) {
-        formData.append('latitude', values.latitude);
-      }
-      if (values.longitude) {
-        formData.append('longitude', values.longitude);
+      if (markerPosition) {
+        formData.append('latitude', markerPosition.lat);
+        formData.append('longitude', markerPosition.lng);
       }
 
       let response;
@@ -174,24 +170,12 @@ const CreateArtworkPage = () => {
           <Input />
         </Form.Item>
 
-        <Form.Item
-          name="latitude"
-          label="Latitude"
-          rules={[
-            { type: 'number', message: 'Latitude must be a number!' }
-          ]}
-        >
-          <Input type="number" step="any" placeholder="Optional" />
+        <Form.Item name="latitude" style={{ display: 'none' }}>
+          <Input type="number" step="any" />
         </Form.Item>
 
-        <Form.Item
-          name="longitude"
-          label="Longitude"
-          rules={[
-            { type: 'number', message: 'Longitude must be a number!' }
-          ]}
-        >
-          <Input type="number" step="any" placeholder="Optional" />
+        <Form.Item name="longitude" style={{ display: 'none' }}>
+          <Input type="number" step="any" />
         </Form.Item>
 
         {isLoaded && (
