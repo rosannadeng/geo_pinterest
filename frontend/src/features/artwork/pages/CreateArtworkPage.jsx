@@ -5,24 +5,56 @@ import ImageUploader from '../components/ImageUploader';
 import api from '../../../services/api';
 import dayjs from 'dayjs';
 import { useAuth } from '../../../contexts/AuthContext';
+import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
 
 const { TextArea } = Input;
 const { Option } = Select;
+
+const mapContainerStyle = {
+  width: '100%',
+  height: '400px',
+};
+
+// Center of the USA
+const defaultCenter = {
+  lat: 39.8283,
+  lng: -98.5795,
+};
 
 const CreateArtworkPage = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [imageInfo, setImageInfo] = useState(null);
   const { user } = useAuth();
+  const [markerPosition, setMarkerPosition] = useState(null);
+
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: 'AIzaSyBdMx5mw7syNkmrDG_2lTfkLyZP_Dqdvr4',
+  });
 
   const handleImageUploaded = (info) => {
     setImageInfo(info);
+    const lat = info.latitude || '';
+    const lng = info.longitude || '';
+    if (lat && lng) {
+      setMarkerPosition({ lat: parseFloat(lat), lng: parseFloat(lng) });
+    }
     form.setFieldsValue({
       medium: info.medium,
       creation_date: info.creation_date ? dayjs(info.creation_date) : null,
       location_name: info.location_name,
-      latitude: info.latitude || '',
-      longitude: info.longitude || '',
+      latitude: lat,
+      longitude: lng,
+    });
+  };
+
+  const handleMapClick = (e) => {
+    const lat = e.latLng.lat();
+    const lng = e.latLng.lng();
+    setMarkerPosition({ lat, lng });
+    form.setFieldsValue({
+      latitude: lat,
+      longitude: lng,
     });
   };
 
@@ -34,14 +66,14 @@ const CreateArtworkPage = () => {
       formData.append('medium', values.medium);
       formData.append('creation_date', values.creation_date.format('YYYY-MM-DD'));
       formData.append('location_name', values.location_name);
-      
+
       if (values.latitude) {
         formData.append('latitude', values.latitude);
       }
       if (values.longitude) {
         formData.append('longitude', values.longitude);
       }
-      
+
       let response;
       if (imageInfo && imageInfo.artwork_id) {
         response = await api.put(`/artwork/${imageInfo.artwork_id}/update`, formData, {
@@ -162,6 +194,20 @@ const CreateArtworkPage = () => {
           <Input type="number" step="any" placeholder="Optional" />
         </Form.Item>
 
+        {isLoaded && (
+          <div style={{ marginBottom: '24px' }}>
+            <label><strong>Pick location on map:</strong></label>
+            <GoogleMap
+              mapContainerStyle={mapContainerStyle}
+              center={markerPosition || defaultCenter}
+              zoom={markerPosition ? 12 : 4}
+              onClick={handleMapClick}
+            >
+              {markerPosition && <Marker position={markerPosition} />}
+            </GoogleMap>
+          </div>
+        )}
+
         <Form.Item>
           <Button type="primary" htmlType="submit">
             Create Artwork
@@ -172,4 +218,4 @@ const CreateArtworkPage = () => {
   );
 };
 
-export default CreateArtworkPage; 
+export default CreateArtworkPage;
