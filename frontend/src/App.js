@@ -12,6 +12,7 @@ import CreateArtworkPage from './features/artwork/pages/CreateArtworkPage.jsx';
 import GalleryPage from './features/gallery/pages/GalleryPage.jsx';
 import ArtworkDetailPage from './features/artwork/pages/ArtworkDetailPage.jsx';
 import ProfileEditPage from './features/profile/pages/ProfileEditPage.jsx';
+import AuthCompletePage from './features/auth/pages/AuthCompletePage.jsx';
 const { Content } = Layout;
 
 const App = () => {
@@ -30,6 +31,7 @@ const App = () => {
               <Route path="/oauth/complete/google-oauth2" element={<OAuthCallback />} />
               <Route path="/artwork/create" element={<CreateArtworkPage />} />
               <Route path="/artwork/:id" element={<ArtworkDetailPage />} />
+              <Route path="/auth/complete" element={<AuthCompletePage />} />
             </Routes>
           </Content>
         </MainLayout>
