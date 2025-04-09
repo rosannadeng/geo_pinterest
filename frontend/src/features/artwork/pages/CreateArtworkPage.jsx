@@ -25,7 +25,6 @@ const CreateArtworkPage = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [imageInfo, setImageInfo] = useState(null);
-  const { user } = useAuth();
   const [markerPosition, setMarkerPosition] = useState(null);
 
   const { isLoaded } = useJsApiLoader({
@@ -59,6 +58,7 @@ const CreateArtworkPage = () => {
   const onFinish = async (values) => {
     try {
       const formData = new FormData();
+      formData.append('image', imageInfo.file);
       formData.append('title', values.title);
       formData.append('description', values.description || '');
       formData.append('medium', values.medium);
@@ -71,23 +71,13 @@ const CreateArtworkPage = () => {
       }
 
       let response;
-      if (imageInfo && imageInfo.artwork_id) {
-        response = await api.put(`/artwork/${imageInfo.artwork_id}/update`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            'X-CSRFToken': getCookie('csrftoken'),
-          },
-          withCredentials: true,
-        });
-      } else {
-        response = await api.post('/artwork/create', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            'X-CSRFToken': getCookie('csrftoken'),
-          },
-          withCredentials: true,
-        });
-      }
+      response = await api.post('/artwork/create', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
+        withCredentials: true,
+      });
 
       if (response.data) {
         message.success('Artwork created successfully');

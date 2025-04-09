@@ -32,6 +32,7 @@ urlpatterns = [
     path("register", views.register_view, name="register"),
     path("token", views.TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh", views.TokenRefreshView.as_view(), name="token_refresh"),
+    path("auth/complete", views.auth_complete, name="auth_complete"),
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
     path("user", views.UserView.as_view(), name="user"),
@@ -46,13 +47,10 @@ urlpatterns = [
     path("artwork", views.ArtworkViewSet.as_view({"get": "list"}), name="artwork_list"),
     path("artwork/create", views.ArtworkViewSet.as_view({"post": "create"}), name="artwork_create"),
     path("artwork/<int:pk>/update", views.ArtworkViewSet.as_view({"put": "update"}), name="artwork_update"),
-    path("artwork/upload-image/", views.upload_image, name="upload_image"),
+    path("artwork/upload-image", views.upload_image, name="upload_image"),
     path("artwork/<int:pk>/", views.ArtworkViewSet.as_view({"get": "retrieve"}), name="artwork_detail"),
     path("gallery", views.GalleryView.as_view(), name="gallery"),
     path("oauth/", include("social_django.urls", namespace="social")),
-    path("oauth/login/google-oauth2", views.google_oauth, name="google_oauth"),
-    path("oauth/complete/google-oauth2", views.oauth_complete, name="oauth_complete"),
-    path("oauth/error", views.social_auth_error, name="social_auth_error"),
 ]
 
 if settings.DEBUG:
