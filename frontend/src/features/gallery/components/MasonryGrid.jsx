@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Image } from 'antd';
+import ArtworkCard from '../../../common/ArtworkCard';
 import './MasonryGrid.css';
 
 const MasonryGrid = ({ artworks, onArtworkClick }) => {
@@ -39,25 +40,11 @@ const MasonryGrid = ({ artworks, onArtworkClick }) => {
       {columns.map((column, columnIndex) => (
         <div key={columnIndex} className="masonry-column">
           {column.map((artwork) => (
-            <Card
+            <ArtworkCard
               key={artwork.id}
-              className="artwork-card"
-              hoverable
+              artwork={artwork}
               onClick={() => onArtworkClick(artwork)}
-              cover={
-                <Image
-                  src={artwork.image}
-                  alt={artwork.title}
-                  preview={false}
-                  className="artwork-image"
-                />
-              }
-            >
-              <Card.Meta
-                title={artwork.title}
-                description={artwork.artist?.username}
-              />
-            </Card>
+            />
           ))}
         </div>
       ))}

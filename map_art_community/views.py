@@ -235,64 +235,12 @@ def map_view(request):
     return render(request, "map_art_community/map.html", {"artworks": artworks_dicts})
 
 
-<<<<<<< HEAD
-class ProfileView(LoginRequiredMixin, DetailView):
-    model = Profile
-    template_name = "map_art_community/profile.html"
-    context_object_name = "profile"
-
-    def get_object(self):
-        username = self.kwargs.get("username", self.request.user.username)
-        return get_object_or_404(Profile, user__username=username)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["artworks"] = self.object.user.artworks.all()
-        return context
-
-class ProfileViewSet(ModelViewSet):
-    serializer_class = ProfileSerializer
-    permission_classes = [IsAuthenticated]
-    
-    def get_queryset(self):
-        if self.action == "list":
-            return Profile.objects.filter(user=self.request.user)
-        username = self.kwargs.get("username")
-        if username:
-            return Profile.objects.filter(user__username=username)
-        return Profile.objects.none()
-
-    def get_object(self):
-        username = self.kwargs.get("username")
-        if not username:
-            return get_object_or_404(Profile, user=self.request.user)
-        return get_object_or_404(Profile, user__username=username)
-
-
-class ArtworkCreateView(LoginRequiredMixin, CreateView):
-    model = Artwork
-    form_class = ArtworkForm
-    template_name = "map_art_community/artwork_form.html"
-    success_url = reverse_lazy("home")
-
-    def form_valid(self, form):
-        form.instance.artist = self.request.user
-        return super().form_valid(form)
-
-
-class ArtworkUpdateView(LoginRequiredMixin, UpdateView):
-    model = Artwork
-    form_class = ArtworkForm
-    template_name = "map_art_community/artwork_form.html"
-    success_url = reverse_lazy("home")
-=======
 class ProfileViewSet(ModelViewSet):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = "user__username"
     lookup_url_kwarg = "username"
->>>>>>> main
 
     def get_queryset(self):
         if self.action == "list":
