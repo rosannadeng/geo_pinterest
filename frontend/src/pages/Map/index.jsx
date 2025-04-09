@@ -12,7 +12,7 @@ const containerStyle = {
 };
 
 // Center of the USA
-var center = {
+const defaultCenter = {
     lat: 39.8283,
     lng: -98.5795,
 };
@@ -20,7 +20,8 @@ var center = {
 const ArtworkMap = () => {
     const [artworks, setArtworks] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedArtwork, setSelectedArtwork] = useState(null);
+    const [center, setCenter] = useState(defaultCenter);
+    const [openInfoWindows, setOpenInfoWindows] = useState({});
 
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
@@ -37,10 +38,12 @@ const ArtworkMap = () => {
                 if (validArtworks.length > 0) {
                     const latSum = validArtworks.reduce((sum, artwork) => sum + artwork.latitude, 0);
                     const lngSum = validArtworks.reduce((sum, artwork) => sum + artwork.longitude, 0);
-                    const avgLat = latSum / validArtworks.length;
-                    const avgLng = lngSum / validArtworks.length;
-                    center.lat = avgLat;
-                    center.lng = avgLng;
+                    const latAvg = latSum / validArtworks.length;
+                    const lngAvg = lngSum / validArtworks.length;
+                    setCenter({
+                        lat: latAvg,
+                        lng: lngAvg,
+                    });
                 }
             } catch (error) {
                 console.error('Error fetching artworks:', error);
@@ -52,8 +55,16 @@ const ArtworkMap = () => {
         fetchArtworks();
     }, []);
 
+    const handleMarkerClick = (artworkId) => {
+        setOpenInfoWindows(prev => ({ ...prev, [artworkId]: true }));
+    };
+
+    const handleCloseClick = (artworkId) => {
+        setOpenInfoWindows(prev => ({ ...prev, [artworkId]: false }));
+    };
+
     const onMapClick = useCallback(() => {
-        setSelectedArtwork(null);
+        setOpenInfoWindows({});
     }, []);
 
     if (loading || !isLoaded) {
@@ -69,23 +80,23 @@ const ArtworkMap = () => {
                 onClick={onMapClick}
             >
                 {artworks.map((artwork) => (
-                    <Marker
-                        key={artwork.id}
-                        position={{ lat: artwork.latitude, lng: artwork.longitude }}
-                        onClick={() => setSelectedArtwork(artwork)}
-                    />
+                    <React.Fragment key={artwork.id}>
+                        <Marker
+                            position={{ lat: artwork.latitude, lng: artwork.longitude }}
+                            onClick={() => handleMarkerClick(artwork.id)}
+                        />
+                        {openInfoWindows[artwork.id] && (
+                            <InfoWindow
+                                position={{ lat: artwork.latitude, lng: artwork.longitude }}
+                                onCloseClick={() => handleCloseClick(artwork.id)}
+                            >
+                                <div style={{ maxWidth: 250 }}>
+                                    <ArtworkCard artwork={artwork} />
+                                </div>
+                            </InfoWindow>
+                        )}
+                    </React.Fragment>
                 ))}
-
-                {selectedArtwork && (
-                    <InfoWindow
-                        position={{ lat: selectedArtwork.latitude, lng: selectedArtwork.longitude }}
-                        onCloseClick={() => setSelectedArtwork(null)}
-                    >
-                        <div style={{ maxWidth: 250 }}>
-                            <ArtworkCard artwork={selectedArtwork} />
-                        </div>
-                    </InfoWindow>
-                )}
             </GoogleMap>
         </div>
     );
