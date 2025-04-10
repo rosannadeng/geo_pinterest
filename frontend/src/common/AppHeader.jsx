@@ -55,11 +55,6 @@ const AppHeader = () => {
         }}>
           <Link to="/" style={{ color: 'inherit' }}>Art Community</Link>
         </div>
-        <AutoComplete
-          options={[]}
-          style={{ width: 200 }}
-          placeholder="Search"
-        />
       </div>
 
       {/* right */}
