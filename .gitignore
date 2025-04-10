@@ -49,3 +49,8 @@ frontend/yarn-error.log*
 frontend/package-lock.json
 
 */settings.json
+
+
+
+package-lock.json
+package.json
