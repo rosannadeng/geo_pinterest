@@ -1,15 +1,13 @@
 // src/features/profile/pages/ProfilePage.jsx
 import React, { useEffect, useState } from "react";
-import { Row, Col, Card, Typography, Button, message, Spin } from "antd";
-import { EditOutlined, UploadOutlined } from "@ant-design/icons";
+import { Row, Col, Card, Button, Spin } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
 import { useAuth } from "../../../contexts/AuthContext";
-import axios from "axios";
 import ProfileCard from "../components/ProfileCard";
 import ArtworkGrid from "../components/ArtworkGrid";
 import { useParams } from 'react-router-dom';
 import api from '../../../services/api';
 
-const { Title } = Typography;
 
 const ProfilePage = () => {
   const { username } = useParams();
@@ -43,12 +41,11 @@ const ProfilePage = () => {
     fetchArtworks();
   }, [username]);
 
-  if (loading) {
+  if (loading || !profile) {
     return <Spin size="large" />;
   }
 
-  const isOwner = user?.user?.username === username;
-
+  const isOwner = (user?.user?.username || user?.username) === username;
   return (
     <div style={{ padding: "24px" }}>
       <Row gutter={[24, 24]}>

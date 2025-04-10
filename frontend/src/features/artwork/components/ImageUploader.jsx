@@ -26,7 +26,7 @@ const ImageUploader = ({ onImageUploaded }) => {
         const formData = new FormData();
         formData.append('image', file);
 
-        const response = await api.post('/artwork/upload-image/', formData, {
+        const response = await api.post('/artwork/upload-image', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
             'X-CSRFToken': getCookie('csrftoken'),
@@ -36,7 +36,7 @@ const ImageUploader = ({ onImageUploaded }) => {
 
         if (response.data) {
           setPreviewImage(URL.createObjectURL(file));
-          onImageUploaded(response.data);
+          onImageUploaded({...response.data, file});
           onSuccess('ok');
         }
       } catch (error) {
