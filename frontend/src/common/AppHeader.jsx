@@ -23,7 +23,7 @@ const AppHeader = () => {
     },
     {
       key: 'profile',
-      label: <Link to={`/profile/${user?.user?.username || user?.username}`}>Profile</Link>,
+      label: <Link to={`/profile/${user?.user?.username}`}>Profile</Link>,
       icon: <UserOutlined />
     }
   ];
