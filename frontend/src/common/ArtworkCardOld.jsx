@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Avatar, Typography, Tooltip, Image, message } from 'antd';
-import { UserOutlined, EnvironmentOutlined, HeartOutlined, HeartFilled, EyeOutlined } from '@ant-design/icons';
+import { UserOutlined, EnvironmentOutlined, HeartOutlined, HeartFilled } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -86,90 +86,36 @@ const ArtworkCard = ({ artwork, onLike }) => {
     }
   };
 
-  const handleView = (artworkId) => {
-    // TODO: Implement artwork details view
-    console.log('Viewing artwork:', artworkId);
-  };
-
-  
-
   return (
-    <Card 
-      className="artwork-card"
-      cover={
-        <div className="artwork-card-cover">
-          <Image alt={artwork.title} src={artwork.image} preview={false} />
-
-          <div className="like-icon">
-            <Tooltip title={liked ? 'Unlike' : 'Like'}>
-              {liked ? (
-                <HeartFilled
-                  key="like"
-                  style={{ color: 'red' }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleLike();
-                  }}
-                />
-              ) : (
-                <HeartOutlined
-                  key="like"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleLike();
-                  }}
-                />
-              )}
-              <span> {likesCount}</span>
-            </Tooltip>
-        </div>
-
-        <div className="mask" onClick={() => handleView(artwork.id)}>
-          <Tooltip title="View Details">
-            <EyeOutlined
-            key="view"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleView(artwork.id);
-            }}
+    <Card
+      hoverable
+      cover={<Image alt={artwork.title} src={artwork.image} />}
+      actions={[
+        <Tooltip title={`View ${artwork.artist_username}'s profile`}>
+          <Avatar 
+            key="artist"
+            src={artwork.artist_profile_picture} 
+            icon={!artwork.artist_profile_picture && <UserOutlined />}
+            style={{ cursor: 'pointer' }}
+            onClick={() => navigate(`/profile/${artwork.artist_username}`)}
           />
+        </Tooltip>,
+        <Tooltip title="View on map">
+          <EnvironmentOutlined key="location" />
+        </Tooltip>,
+        <Tooltip title="Like">
+          {liked ? 
+            <HeartFilled key="like" style={{ color: 'red' }} onClick={handleLike} /> : 
+            <HeartOutlined key="like" onClick={handleLike} />}
+          <span>{likesCount}</span>
         </Tooltip>
-      </div>
-
-        </div>
-      }
-      hoverable={true}
+      ]}
     >
-  </Card>
-    // <Card
-    //   hoverable
-    //   cover={<Image alt={artwork.title} src={artwork.image} />}
-    //   actions={[
-    //     <Tooltip title={`View ${artwork.artist_username}'s profile`}>
-    //       <Avatar 
-    //         key="artist"
-    //         src={artwork.artist_profile_picture} 
-    //         icon={!artwork.artist_profile_picture && <UserOutlined />}
-    //         style={{ cursor: 'pointer' }}
-    //         onClick={() => navigate(`/profile/${artwork.artist_username}`)}
-    //       />
-    //     </Tooltip>,
-    //     <Tooltip title="View on map">
-    //       <EnvironmentOutlined key="location" />
-    //     </Tooltip>,
-    //     <Tooltip title="Like">
-    //       {liked ? 
-    //         <HeartFilled key="like" style={{ color: 'red' }} onClick={handleLike} /> : 
-    //         <HeartOutlined key="like" onClick={handleLike} />}
-    //       <span>{likesCount}</span>
-    //     </Tooltip>
-    //   ]}
-    // >
-    //   <Meta
-    //     title={artwork.title}
-    //     description={artwork.description}
-    //   />
-    // </Card>
+      <Meta
+        title={artwork.title}
+        description={artwork.description}
+      />
+    </Card>
   );
 };
 
