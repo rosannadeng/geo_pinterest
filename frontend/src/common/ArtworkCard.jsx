@@ -92,7 +92,8 @@ const ArtworkCard = ({ artwork, onLike }) => {
       cover={<Image alt={artwork.title} src={artwork.image} />}
       actions={[
         <UserOutlined key="artist" 
-        onClick={() => navigate(`/profile/${artwork.artist_id}`)}/>,
+        onClick={() => 
+          navigate(`/profile/${artwork.artist_username}`)}/>,
          // TODO: link to artist profile
         <EnvironmentOutlined key="location" />, // TODO: link to map view
         <Tooltip title="Like">
