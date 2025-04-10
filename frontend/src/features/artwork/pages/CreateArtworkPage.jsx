@@ -31,27 +31,53 @@ const CreateArtworkPage = () => {
     googleMapsApiKey: 'AIzaSyBdMx5mw7syNkmrDG_2lTfkLyZP_Dqdvr4',
   });
 
-  const handleImageUploaded = (info) => {
+  const fetchLocationName = async (lat, lng) => {
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=AIzaSyBdMx5mw7syNkmrDG_2lTfkLyZP_Dqdvr4`
+      );
+      const data = await response.json();
+      if (data.status === 'OK' && data.results.length > 0) {
+        return data.results[0].formatted_address;
+      } else {
+        return '';
+      }
+    } catch (error) {
+      console.error('Error fetching location name:', error);
+      return '';
+    }
+  };
+
+  const handleImageUploaded = async (info) => {
     setImageInfo(info);
     const lat = info.latitude || '';
     const lng = info.longitude || '';
+    let locationName = info.location_name;
+
     if (lat && lng) {
       setMarkerPosition({ lat: parseFloat(lat), lng: parseFloat(lng) });
+      if (!locationName) {
+        locationName = await fetchLocationName(lat, lng);
+      }
     }
+
     form.setFieldsValue({
       medium: info.medium,
       creation_date: info.creation_date ? dayjs(info.creation_date) : null,
-      location_name: info.location_name,
+      location_name: locationName,
     });
   };
 
-  const handleMapClick = (e) => {
+  const handleMapClick = async (e) => {
     const lat = e.latLng.lat();
     const lng = e.latLng.lng();
+    const locationName = await fetchLocationName(lat, lng);
+
     setMarkerPosition({ lat, lng });
     form.setFieldsValue({
       latitude: lat,
       longitude: lng,
+      location_name: locationName,
     });
   };
 
