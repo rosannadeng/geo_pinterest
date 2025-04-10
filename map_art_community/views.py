@@ -7,6 +7,8 @@ from django.contrib import messages
 from django.http import Http404, HttpResponse, JsonResponse
 from django.urls import reverse_lazy
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+
 from .models import Profile, Artwork
 import mimetypes
 import json
@@ -45,6 +47,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 class ArtworkSerializer(serializers.ModelSerializer):
     image_url = serializers.CharField(required=False, write_only=True)
     artist = serializers.PrimaryKeyRelatedField(read_only=True)
+    total_likes = serializers.SerializerMethodField()
 
     class Meta:
         model = Artwork
@@ -63,6 +66,7 @@ class ArtworkSerializer(serializers.ModelSerializer):
             "artist",
             "likes",
             "views",
+            "total_likes",
         ]
         extra_kwargs = {"image": {"required": False}}
 
@@ -71,6 +75,9 @@ class ArtworkSerializer(serializers.ModelSerializer):
         if image_url:
             validated_data["image"] = image_url
         return super().create(validated_data)
+
+    def get_total_likes(self, obj):
+        return obj.total_likes()
 
 
 @api_view(["POST"])
@@ -452,3 +459,47 @@ def upload_image(request):
 
 
 
+@permission_classes([IsAuthenticated])
+@api_view(["GET"])
+def check_artwork_like(request, artwork_id):
+    try:
+        artwork = Artwork.objects.get(id=artwork_id)
+        
+        is_liked = request.user in artwork.likes.all()
+        
+        return Response({
+            'liked': is_liked,
+            'likes_count': artwork.total_likes()
+        })
+    except Artwork.DoesNotExist:
+        return Response({'error': 'Artwork not found'}, status=404)
+
+## TODO: 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def like_artwork(request, artwork_id):
+    
+    try:
+        if not request.user.is_authenticated:
+            return Response({'error': 'User not authenticated'}, status=401)
+        
+        artwork = Artwork.objects.get(id=artwork_id)
+        user = request.user
+        
+        if user in artwork.likes.all():
+            artwork.likes.remove(user)
+            action = 'unliked'
+        else:
+            artwork.likes.add(user)
+            action = 'liked'
+        
+        artwork.save()
+        print(f"User {user.username} {action} artwork {artwork.id}")
+        
+        return Response({
+            'status': 'success',
+            'action': action,
+            'likes_count': artwork.total_likes(),
+        })
+    except Artwork.DoesNotExist:
+        return Response({'error': 'Artwork not found'}, status=404)

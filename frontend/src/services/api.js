@@ -73,6 +73,10 @@ export const artwork = {
   update: (id, data) => api.put(`/artwork/${id}/update/`, data),
   getAll: () => api.get('/gallery/'),
   getOne: (id) => api.get(`/artwork/${id}/`),
+  
+  // add artwork like/unlike
+  checkIfLiked: (id) => api.get(`/artwork/${id}/check_if_liked/`),
+  like: (id) => api.post(`/artwork/${id}/like/`),
 };
 
 export const profile = {
