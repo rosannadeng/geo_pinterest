@@ -1,7 +1,7 @@
 import React from 'react';
 import { Layout, Menu, AutoComplete, Button } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
-import { PictureOutlined, HomeOutlined, UserOutlined, LoginOutlined, UserAddOutlined } from '@ant-design/icons';
+import { PictureOutlined, UserOutlined, LoginOutlined } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext.jsx';
 
 const { Header } = Layout;
@@ -23,7 +23,7 @@ const AppHeader = () => {
     },
     {
       key: 'profile',
-      label: <Link to={`/profile/${user?.user?.username}`}>Profile</Link>,
+      label: <Link to={`/profile/${user?.user?.username || user?.username}`}>Profile</Link>,
       icon: <UserOutlined />
     }
   ];
