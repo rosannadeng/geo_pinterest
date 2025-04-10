@@ -1,5 +1,6 @@
 import React from "react";
 import { Row, Col, Card, Image } from "antd";
+import ArtworkCard from "../../../common/ArtworkCard";
 
 const ArtworkGrid = ({ artworks }) => {
   return (

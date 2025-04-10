@@ -6,7 +6,7 @@ import { useLocation } from 'react-router-dom';
 
 const { Content } = Layout;
 
-const showSiderRoutes = ['/', '/profile'];
+const showSiderRoutes = ['/'];
 
 const MainLayout = ({ children }) => {
   const location = useLocation(); 

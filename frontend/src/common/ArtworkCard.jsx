@@ -89,6 +89,7 @@ const ArtworkCard = ({ artwork, onLike }) => {
   const handleView = (artworkId) => {
     // TODO: Implement artwork details view
     console.log('Viewing artwork:', artworkId);
+    navigate(`/artwork/${artworkId}`);
   };
 
   
@@ -126,11 +127,9 @@ const ArtworkCard = ({ artwork, onLike }) => {
 
         <div className="mask" onClick={() => handleView(artwork.id)}>
           <Tooltip title="View Details">
-            <EyeOutlined
-            key="view"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleView(artwork.id);
+            <EyeOutlined key="view" onClick={(e) => {
+                  e.stopPropagation();
+                  handleView(artwork.id);
             }}
           />
         </Tooltip>
@@ -141,35 +140,6 @@ const ArtworkCard = ({ artwork, onLike }) => {
       hoverable={true}
     >
   </Card>
-    // <Card
-    //   hoverable
-    //   cover={<Image alt={artwork.title} src={artwork.image} />}
-    //   actions={[
-    //     <Tooltip title={`View ${artwork.artist_username}'s profile`}>
-    //       <Avatar 
-    //         key="artist"
-    //         src={artwork.artist_profile_picture} 
-    //         icon={!artwork.artist_profile_picture && <UserOutlined />}
-    //         style={{ cursor: 'pointer' }}
-    //         onClick={() => navigate(`/profile/${artwork.artist_username}`)}
-    //       />
-    //     </Tooltip>,
-    //     <Tooltip title="View on map">
-    //       <EnvironmentOutlined key="location" />
-    //     </Tooltip>,
-    //     <Tooltip title="Like">
-    //       {liked ? 
-    //         <HeartFilled key="like" style={{ color: 'red' }} onClick={handleLike} /> : 
-    //         <HeartOutlined key="like" onClick={handleLike} />}
-    //       <span>{likesCount}</span>
-    //     </Tooltip>
-    //   ]}
-    // >
-    //   <Meta
-    //     title={artwork.title}
-    //     description={artwork.description}
-    //   />
-    // </Card>
   );
 };
 
