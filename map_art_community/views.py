@@ -88,7 +88,7 @@ class ArtworkSerializer(serializers.ModelSerializer):
         return obj.artist.username if obj.artist else None
 
     def get_artist_profile_picture(self, obj):
-        if obj.artist and hasattr(obj.artist, 'profile') and obj.artist.profile.profile_picture:
+        if obj.artist and hasattr(obj.artist, "profile") and obj.artist.profile.profile_picture:
             return obj.artist.profile.profile_picture.url
         return None
 
@@ -519,12 +519,10 @@ def upload_image(request):
         os.unlink(temp_file.name)
 
         extracted_info = {
-            "medium": "DIG",
             "creation_date": meta["date"],
             "latitude": meta["lat"],
             "longitude": meta["lng"],
-            "location_name": f"({meta['lat']}, {meta['lng']})" if meta["lat"] and meta["lng"] else "Unknown Location",
-            "image_url": artwork.image.url,
+            "image_url": temp_file.name,
         }
 
         return Response(extracted_info)
@@ -532,49 +530,48 @@ def upload_image(request):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
 @permission_classes([IsAuthenticated])
 @api_view(["GET"])
 def check_artwork_like(request, artwork_id):
     try:
         artwork = Artwork.objects.get(id=artwork_id)
-        
-        is_liked = request.user in artwork.likes.all()
-        
-        return Response({
-            'liked': is_liked,
-            'likes_count': artwork.total_likes()
-        })
-    except Artwork.DoesNotExist:
-        return Response({'error': 'Artwork not found'}, status=404)
 
-## TODO: 
+        is_liked = request.user in artwork.likes.all()
+
+        return Response({"liked": is_liked, "likes_count": artwork.total_likes()})
+    except Artwork.DoesNotExist:
+        return Response({"error": "Artwork not found"}, status=404)
+
+
+## TODO:
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def like_artwork(request, artwork_id):
-    
+
     try:
         if not request.user.is_authenticated:
-            return Response({'error': 'User not authenticated'}, status=401)
-        
+            return Response({"error": "User not authenticated"}, status=401)
+
         artwork = Artwork.objects.get(id=artwork_id)
         user = request.user
-        
+
         if user in artwork.likes.all():
             artwork.likes.remove(user)
-            action = 'unliked'
+            action = "unliked"
         else:
             artwork.likes.add(user)
-            action = 'liked'
-        
+            action = "liked"
+
         artwork.save()
         print(f"User {user.username} {action} artwork {artwork.id}")
-        
-        return Response({
-            'status': 'success',
-            'action': action,
-            'likes_count': artwork.total_likes(),
-        })
+
+        return Response(
+            {
+                "status": "success",
+                "action": action,
+                "likes_count": artwork.total_likes(),
+            }
+        )
     except Artwork.DoesNotExist:
         # If artwork doesn't exist, return error
-        return Response({'error': 'Artwork not found'}, status=404)
+        return Response({"error": "Artwork not found"}, status=404)
