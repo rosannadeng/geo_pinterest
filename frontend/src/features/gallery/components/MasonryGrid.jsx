@@ -3,7 +3,7 @@ import { Card, Image } from 'antd';
 import ArtworkCard from '../../../common/ArtworkCard';
 import './MasonryGrid.css';
 
-const MasonryGrid = ({ artworks, onArtworkClick }) => {
+const MasonryGrid = ({ artworks, onArtworkClick, onLike }) => {
   const [columns, setColumns] = useState([]);
   const [columnCount, setColumnCount] = useState(3);
 
@@ -44,6 +44,7 @@ const MasonryGrid = ({ artworks, onArtworkClick }) => {
               key={artwork.id}
               artwork={artwork}
               onClick={() => onArtworkClick(artwork)}
+              // onLike={onLike}
             />
           ))}
         </div>

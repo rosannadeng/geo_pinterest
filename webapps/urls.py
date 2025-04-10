@@ -21,6 +21,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 import map_art_community.views as views
 from rest_framework.routers import DefaultRouter
+from rest_framework.viewsets import ModelViewSet
 
 router = DefaultRouter()
 router.register(r"profile", views.ProfileViewSet, basename="profile")
@@ -38,10 +39,10 @@ urlpatterns = [
     path("profile", views.ProfileViewSet.as_view({"get": "list"}), name="profile_list"),
     path(
         "profile/<str:username>",
-        views.ProfileViewSet.as_view({"get": "retrieve"}),
+        views.ProfileViewSet.as_view({"get": "retrieve", "put": "update"}),
         name="profile_detail",
     ),
-    path("profile/<str:username>/edit", views.ProfileViewSet.as_view({"put": "update"}), name="profile_edit"),
+    path("profile/setup", views.profile_setup, name="profile_setup"),
     path("profile/<str:username>/photo", views.get_photo, name="profile_photo"),
     path("artwork", views.ArtworkViewSet.as_view({"get": "list"}), name="artwork_list"),
     path("artwork/create", views.ArtworkViewSet.as_view({"post": "create"}), name="artwork_create"),
@@ -53,6 +54,10 @@ urlpatterns = [
     path("oauth/login/google-oauth2", views.google_oauth, name="google_oauth"),
     path("oauth/complete/google-oauth2", views.oauth_complete, name="oauth_complete"),
     path("oauth/error", views.social_auth_error, name="social_auth_error"),
+
+    # add artwork like/unlike
+    path("artwork/<int:artwork_id>/like/", views.like_artwork, name="like_artwork"),
+    path("artwork/<int:artwork_id>/check_if_liked/", views.check_artwork_like, name="check_artwork_like"),
 ]
 
 if settings.DEBUG:
