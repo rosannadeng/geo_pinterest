@@ -4,7 +4,6 @@ import { UserOutlined, EnvironmentOutlined, HeartOutlined, HeartFilled } from '@
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import './ArtworkCard.css';
 
 const { Meta } = Card;
 const { Text } = Typography;
