@@ -37,5 +37,5 @@
 .artwork-card:hover .mask {
   opacity: 1;
   pointer-events: auto;
-  z-index: 1; /* 必须低于 .like-icon 的 z-index */
+  z-index: 1; 
 }
