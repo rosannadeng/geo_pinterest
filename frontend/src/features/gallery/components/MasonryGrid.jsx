@@ -44,7 +44,6 @@ const MasonryGrid = ({ artworks, onArtworkClick, onLike }) => {
               key={artwork.id}
               artwork={artwork}
               onClick={() => onArtworkClick(artwork)}
-              // onLike={onLike}
             />
           ))}
         </div>
