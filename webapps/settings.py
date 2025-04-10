@@ -145,36 +145,31 @@ AUTHENTICATION_BACKENDS = (
 # Social Auth settings
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config.get("google_oauth", "client_id", fallback="")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config.get("google_oauth", "client_secret", fallback="")
-SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = (
-    os.getenv("FRONTEND_URL", "http://localhost:3000") + "/oauth/complete/google-oauth2"
-)
+SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = "http://localhost:8000/oauth/complete/google-oauth2"
 
 # Additional Social Auth settings
 SOCIAL_AUTH_URL_NAMESPACE = "social"
 SOCIAL_AUTH_GOOGLE_OAUTH2_AUTH_EXTRA_ARGUMENTS = {
     "access_type": "offline",
-    "prompt": "consent",
+    "prompt": "select_account",
+    "include_granted_scopes": "true",
 }
 
-SOCIAL_AUTH_DEBUG = True
-SOCIAL_AUTH_RAISE_EXCEPTIONS = True
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = os.getenv("FRONTEND_URL", "http://localhost:3000") + "/profile/{username}"
-SOCIAL_AUTH_LOGIN_ERROR_URL = os.getenv("FRONTEND_URL", "http://localhost:3000") + "/auth"
-SOCIAL_AUTH_NEW_USER_REDIRECT_URL = os.getenv("FRONTEND_URL", "http://localhost:3000") + "/profile/setup"
+SOCIAL_AUTH_GOOGLE_OAUTH2_AUTHORIZE_PARAMS = {"scope": "openid profile email"}
 
-
-# Security settings
-SOCIAL_AUTH_STATE_LENGTH = 32
-SOCIAL_AUTH_SANITIZE_REDIRECTS = True
-SOCIAL_AUTH_REDIRECT_IS_HTTPS = False
-SOCIAL_AUTH_GOOGLE_OAUTH2_USE_UNIQUE_USER_ID = True
-SOCIAL_AUTH_GOOGLE_OAUTH2_IGNORE_DEFAULT_SCOPE = True
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     "https://www.googleapis.com/auth/userinfo.email",
     "https://www.googleapis.com/auth/userinfo.profile",
+    "openid",
 ]
 
-LOGIN_REDIRECT_URL = "home"
+SOCIAL_AUTH_DEBUG = True
+SOCIAL_AUTH_RAISE_EXCEPTIONS = True
+SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ["email", "name", "picture"]
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = "/auth/complete"
+
+
+LOGIN_REDIRECT_URL = "gallery"
 LOGOUT_URL = "logout"
 LOGOUT_REDIRECT_URL = "login"
 
@@ -188,9 +183,11 @@ SOCIAL_AUTH_PIPELINE = (
     "social_core.pipeline.user.create_user",
     "social_core.pipeline.social_auth.associate_user",
     "social_core.pipeline.social_auth.load_extra_data",
-    "social_core.pipeline.user.user_details",
+    "map_art_community.pipeline.save_email_to_extra_data",
     "map_art_community.pipeline.create_profile",
+    "social_core.pipeline.user.user_details",
 )
+
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),

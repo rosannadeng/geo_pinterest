@@ -42,12 +42,18 @@ const auth = {
 
   logout: async () => {
     try {
+      const token = localStorage.getItem('token');
       const refreshToken = localStorage.getItem('refreshToken');
       if (refreshToken) {
-        await axios.post(`${API_URL}/logout`, { refresh: refreshToken });
+        await axios.post(`${API_URL}/logout`, { refresh: refreshToken }, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
       }
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
     } catch (error) {
       console.error('Logout error:', error);
       throw error;
@@ -71,29 +77,8 @@ const auth = {
 
   // Google OAuth related methods
   getGoogleAuthUrl: () => {
-    return `${API_URL}/oauth/login/google-oauth2`;
+    return `${API_URL}/oauth/login/google-oauth2/`;
   },
-
-  handleGoogleCallback: async (code) => {
-    try {
-      const response = await axios.get(`${API_URL}/oauth/complete/google-oauth2`, {
-        params: { code }
-      });
-      if (response.data) {
-        localStorage.setItem('token', response.data.access);
-        localStorage.setItem('refreshToken', response.data.refresh);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        if (response.data.redirect_url) {
-          window.location.href = response.data.redirect_url;
-        }
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Google OAuth error:', error);
-      throw error;
-    }
-  }
 };
 
 export default auth; 
