@@ -25,7 +25,7 @@ const AppSider = () => {
       style={{ 
         backgroundColor: '#fff',
         padding: '24px',
-        height: '95vh', 
+        height: '95vh',   //could be code responsively
         overflowY: 'auto' }}>
       <Flex vertical gap={16}>
         {artworks.map((artwork) => (
