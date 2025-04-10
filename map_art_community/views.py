@@ -503,8 +503,6 @@ def upload_image(request):
             "creation_date": meta["date"],
             "latitude": meta["lat"],
             "longitude": meta["lng"],
-            "medium": "DIG",
-            "location_name": "Unknown Location",
         }
 
         return Response(extracted_info)
