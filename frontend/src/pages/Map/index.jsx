@@ -24,7 +24,6 @@ const ArtworkMap = () => {
     const [openInfoWindows, setOpenInfoWindows] = useState({});
 
     const { isLoaded } = useJsApiLoader({
-        id: 'google-map-script',
         googleMapsApiKey: 'AIzaSyBdMx5mw7syNkmrDG_2lTfkLyZP_Dqdvr4',
     });
 
