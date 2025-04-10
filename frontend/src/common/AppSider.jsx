@@ -1,7 +1,7 @@
 import React from 'react';
 import { Layout, Card , Flex} from 'antd';
 import MasonryGrid from '../features/gallery/components/MasonryGrid';
-import ArtworkCard from './ArtworkCardOld';
+import ArtworkCard from './ArtworkCard';
 import api from '../services/api';
 import { useEffect, useState } from 'react';
 const { Sider } = Layout;
@@ -25,7 +25,7 @@ const AppSider = () => {
       style={{ 
         backgroundColor: '#fff',
         padding: '24px',
-        height: '100vh', 
+        height: '95vh', 
         overflowY: 'auto' }}>
       <Flex vertical gap={16}>
         {artworks.map((artwork) => (
