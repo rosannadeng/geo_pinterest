@@ -77,17 +77,13 @@ const ArtworkCard = ({ artwork, onLike }) => {
       
       setLikesCount(response.data.likes_count);
       
-      // If parent component provided a callback, call it
-      if (onLike) {
-        onLike(artwork.id);
-        }
-      } catch (error) {
-        console.error('Error liking artwork:', error);
-        // 恢复原状态
-        setLiked(!liked);
-        setLikesCount(liked ? likesCount - 1 : likesCount + 1);
-        message.error('Failed to like artwork. Please try again.');
-      }
+
+    } catch (error) {
+      console.error('Error liking artwork:', error);
+      setLiked(!liked);
+      setLikesCount(liked ? likesCount - 1 : likesCount + 1);
+      message.error('Failed to like artwork. Please try again.');
+    }
   };
 
   return (
