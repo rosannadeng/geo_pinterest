@@ -29,10 +29,6 @@ const GalleryPage = () => {
     navigate(`/artwork/${artwork.id}`);
   };
 
-  // const handleLike = (artworkId) => {
-  //   console.log('Like button clicked for artwork:', artworkId);
-  // };
-
   if (loading) {
     return <Spin size="large" style={{ display: 'flex', justifyContent: 'center', marginTop: '20%' }} />;
   }
@@ -42,7 +38,6 @@ const GalleryPage = () => {
       <MasonryGrid
         artworks={artworks}
         onArtworkClick={handleArtworkClick}
-        // onLike={handleLike}
       />
     </div>
   );
