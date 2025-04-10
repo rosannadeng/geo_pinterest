@@ -51,9 +51,9 @@ const ArtworkCard = ({ artwork, onLike }) => {
     }
   }, [user, artwork.id]);
 
-  // useEffect(() => {
-  //   console.log(`Artwork ${artwork.id} - Liked state changed to: ${liked}`);
-  // }, [liked, artwork.id]);
+  useEffect(() => {
+    console.log('Artwork object:', artwork);
+  }, [artwork]);
 
   // Function that runs when user clicks the like button
   const handleLike = async () => {
@@ -91,11 +91,18 @@ const ArtworkCard = ({ artwork, onLike }) => {
       hoverable
       cover={<Image alt={artwork.title} src={artwork.image} />}
       actions={[
-        <UserOutlined key="artist" 
-        onClick={() => 
-          navigate(`/profile/${artwork.artist_username}`)}/>,
-         // TODO: link to artist profile
-        <EnvironmentOutlined key="location" />, // TODO: link to map view
+        <Tooltip title={`View ${artwork.artist_username}'s profile`}>
+          <Avatar 
+            key="artist"
+            src={artwork.artist_profile_picture} 
+            icon={!artwork.artist_profile_picture && <UserOutlined />}
+            style={{ cursor: 'pointer' }}
+            onClick={() => navigate(`/profile/${artwork.artist_username}`)}
+          />
+        </Tooltip>,
+        <Tooltip title="View on map">
+          <EnvironmentOutlined key="location" />
+        </Tooltip>,
         <Tooltip title="Like">
           {liked ? 
             <HeartFilled key="like" style={{ color: 'red' }} onClick={handleLike} /> : 

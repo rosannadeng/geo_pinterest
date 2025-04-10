@@ -49,6 +49,7 @@ class ArtworkSerializer(serializers.ModelSerializer):
     artist = serializers.PrimaryKeyRelatedField(read_only=True)
     total_likes = serializers.SerializerMethodField()
     artist_username = serializers.SerializerMethodField()
+    artist_profile_picture = serializers.SerializerMethodField()
 
     class Meta:
         model = Artwork
@@ -66,6 +67,7 @@ class ArtworkSerializer(serializers.ModelSerializer):
             "longitude",
             "artist",
             "artist_username",
+            "artist_profile_picture",
             "likes",
             "views",
             "total_likes",
@@ -83,6 +85,11 @@ class ArtworkSerializer(serializers.ModelSerializer):
 
     def get_artist_username(self, obj):
         return obj.artist.username if obj.artist else None
+
+    def get_artist_profile_picture(self, obj):
+        if obj.artist and hasattr(obj.artist, 'profile') and obj.artist.profile.profile_picture:
+            return obj.artist.profile.profile_picture.url
+        return None
 
 
 @api_view(["POST"])
