@@ -86,10 +86,10 @@ const ArtworkCard = ({ artwork, onLike }) => {
     }
   };
 
-  const handleView = (artworkId) => {
+  const handleView = (artwork) => {
     // TODO: Implement artwork details view
-    console.log('Viewing artwork:', artworkId);
-    navigate(`/artwork/${artworkId}`);
+    console.log('Viewing artwork:', artwork);
+    navigate(`/artwork/${artwork.id}`);
   };
 
   
@@ -125,11 +125,10 @@ const ArtworkCard = ({ artwork, onLike }) => {
             </Tooltip>
         </div>
 
-        <div className="mask" onClick={() => handleView(artwork.id)}>
+        <div className="mask" onClick={() => handleView(artwork)}>
           <Tooltip title="View Details">
             <EyeOutlined key="view" onClick={(e) => {
                   e.stopPropagation();
-                  handleView(artwork.id);
             }}
           />
         </Tooltip>

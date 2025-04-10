@@ -9,34 +9,20 @@ import { useNavigate } from 'react-router-dom';
 
 
 const ArtworkDetailPage = ({ artworkId }) => {
-    const [liked, setLiked] = useState(false);
-    const [likesCount, setLikesCount] = useState(0);
-  
-    const { user } = useAuth();
-    const navigate = useNavigate();
-    const { id } = useParams();
-    console.log(id);
-    console.log(artworkId);
-    const [artwork, setArtwork] = useState(null);   
 
+    console.log("artworkId", artworkId);
+
+    const [artwork, setArtwork] = useState([]);
+
+   
     useEffect(() => {
-        const fetchArtwork = async () => {
-            try {
-                const response = await api.get(`/artwork/${id}`);
-                
-                setArtwork(response.data);
-                setLikesCount(response.data.total_likes || 0);
-                console.log('Fetching artwork with id:', id);
-                console.log('API response:', response.data);
-            } catch (error) {
-                console.error('Error fetching artwork:', error);
-            }
-        };
-        if (id) {
-            fetchArtwork();
-            console.log(artwork);
-        }
-    }, [id]);
+    const fetchArtwork = async () => {
+        const response = await api.get(`/artwork/${artworkId}`);
+        setArtwork(response.data);
+        console.log(response.data);
+    };
+    fetchArtwork();
+   }, [artwork]);
 
   
 
