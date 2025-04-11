@@ -360,7 +360,13 @@ class ArtworkViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Artwork.objects.all().order_by("-upload_date")
+        artist = self.request.GET.get("artist")  
+        queryset = Artwork.objects.all().order_by("-upload_date") 
+
+        if artist:  
+            queryset = queryset.filter(artist=artist) 
+        return queryset
+    
 
     def perform_create(self, serializer):
         if "image" not in self.request.FILES:
