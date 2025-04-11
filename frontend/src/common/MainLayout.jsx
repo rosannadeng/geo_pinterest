@@ -15,7 +15,7 @@ const MainLayout = ({ children }) => {
     <Layout>
       <AppHeader />
       <Layout>
-        {showSiderRoutes.includes(location.pathname) && <AppSider />}
+        {/* {showSiderRoutes.includes(location.pathname) && <AppSider />} */}
         <Content style={{ padding: '0', minHeight: 'calc(100vh - 64px)' }}>
           {children}
         </Content>

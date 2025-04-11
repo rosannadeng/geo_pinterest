@@ -3,6 +3,7 @@ import { Layout, Spin } from 'antd';
 import { GoogleMap, Marker, InfoWindow, useJsApiLoader } from '@react-google-maps/api';
 import api from '../../services/api';
 import ArtworkCard from '../../common/ArtworkCard';
+import AppSider from '../../common/AppSider';
 
 const { Content } = Layout;
 
@@ -104,6 +105,7 @@ const ArtworkMap = () => {
 const MapPage = () => {
     return (
         <Layout>
+            <AppSider />
             <Content>
                 <ArtworkMap />
             </Content>
