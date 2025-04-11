@@ -7,9 +7,9 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 
+const ArtworkDetailPage = () => {
 
-const ArtworkDetailPage = ({ artworkId }) => {
-
+    const { id: artworkId } = useParams(); 
     console.log("artworkId", artworkId);
 
     const [artwork, setArtwork] = useState([]);
