@@ -28,6 +28,7 @@ import requests
 from django.conf import settings
 from PIL import Image
 from datetime import datetime
+import tempfile
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -87,7 +88,7 @@ class ArtworkSerializer(serializers.ModelSerializer):
         return obj.artist.username if obj.artist else None
 
     def get_artist_profile_picture(self, obj):
-        if obj.artist and hasattr(obj.artist, 'profile') and obj.artist.profile.profile_picture:
+        if obj.artist and hasattr(obj.artist, "profile") and obj.artist.profile.profile_picture:
             return obj.artist.profile.profile_picture.url
         return None
 
@@ -116,6 +117,66 @@ def login_view(request):
         return Response({"errors": {"general": "Invalid username or password"}}, status=status.HTTP_401_UNAUTHORIZED)
 
     return Response({"errors": {"general": "Method not allowed"}}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+@login_required
+def auth_complete(request):
+    try:
+        user = request.user
+        social = user.social_auth.filter(provider="google-oauth2").first()
+        if not social:
+            return JsonResponse({"error": "No social auth found"}, status=400)
+
+        extra_data = social.extra_data
+
+        email = extra_data.get("email")
+        if not email:
+            return JsonResponse({"error": "No email provided by Google"}, status=400)
+
+        name = extra_data.get("fullname") or extra_data.get("name") or email.split("@")[0]
+        picture = extra_data.get("picture", "")
+
+        existing_user = User.objects.filter(email=email).exclude(id=user.id).first()
+        if existing_user:
+            social.user = existing_user
+            social.save()
+            user.delete()
+            user = existing_user
+        else:
+            base_username = email.split("@")[0]
+            username = base_username
+            counter = 1
+            while User.objects.filter(username=username).exclude(id=user.id).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
+            user.username = username
+
+        user.email = email
+        user.save()
+
+        profile, created = Profile.objects.get_or_create(user=user)
+        if created:
+            profile.bio = ""
+            profile.website = ""
+            profile.save()
+
+        refresh = RefreshToken.for_user(user)
+        frontend_url = "http://localhost:3000"
+
+        user_data = {"username": user.username, "email": email, "name": name, "picture": picture}
+
+        redirect_url = (
+            f"{frontend_url}/auth/complete?"
+            f"access={str(refresh.access_token)}&"
+            f"refresh={str(refresh)}&"
+            f"user={json.dumps(user_data)}"
+        )
+        return redirect(redirect_url)
+
+    except Exception as e:
+        import traceback
+
+        return JsonResponse({"error": "OAuth flow failed", "details": str(e)}, status=500)
 
 
 class TokenObtainPairView(APIView):
@@ -161,7 +222,6 @@ class UserView(APIView):
 @csrf_exempt
 def register_view(request):
     if request.method == "POST":
-        print("Received data:", request.data)
         form = RegisterForm(request.data)
         if form.is_valid():
             try:
@@ -175,9 +235,7 @@ def register_view(request):
                     }
                 )
             except Exception as e:
-                print("Registration error:", str(e))
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        print("Form errors:", form.errors)
         return Response({"error": form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -206,8 +264,8 @@ def logout_view(request):
         refresh_token = request.data.get("refresh")
         if refresh_token:
             token = RefreshToken(refresh_token)
-            token.blacklist()
-        return Response({"message": "Successfully logged out"})
+            return Response({"message": "Successfully logged out"})
+        return Response({"error": "Refresh token is required"}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -305,7 +363,14 @@ class ArtworkViewSet(ModelViewSet):
         return Artwork.objects.all().order_by("-upload_date")
 
     def perform_create(self, serializer):
-        serializer.save(artist=self.request.user)
+        if "image" not in self.request.FILES:
+            raise serializers.ValidationError({"error": "Image is required"})
+
+        artwork = serializer.save(artist=self.request.user)
+        image = self.request.FILES["image"]
+        filename = f"{artwork.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{image.name}"
+        artwork.image.save(filename, image)
+        artwork.save()
 
     def update(self, request, *args, **kwargs):
         try:
@@ -327,6 +392,11 @@ class ArtworkViewSet(ModelViewSet):
                     value = data[field]
                     if value is not None and value != "":
                         setattr(instance, field, value)
+
+            if "image" in request.FILES:
+                image = request.FILES["image"]
+                filename = f"{instance.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{image.name}"
+                instance.image.save(filename, image)
 
             instance.save(update_fields=update_fields)
             serializer = self.get_serializer(instance)
@@ -440,29 +510,19 @@ def upload_image(request):
         if not image.content_type.startswith("image/"):
             return Response({"error": "File is not an image"}, status=status.HTTP_400_BAD_REQUEST)
 
-        artwork = Artwork.objects.create(
-            artist=request.user,
-            title="Temporary Title",
-            description="",
-            medium="DIG",
-            creation_date=datetime.now().date(),
-            location_name="Unknown Location",
-        )
+        temp_file = tempfile.NamedTemporaryFile(delete=False)
+        temp_file.write(image.read())
+        temp_file.close()
 
-        filename = f"{artwork.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{image.name}"
-        artwork.image.save(filename, image)
-        artwork.save()
+        meta = _extract_metadata(temp_file.name)
 
-        meta = _extract_metadata(artwork.image.path)
+        os.unlink(temp_file.name)
 
         extracted_info = {
-            "artwork_id": artwork.id,
-            "medium": "DIG",
             "creation_date": meta["date"],
             "latitude": meta["lat"],
             "longitude": meta["lng"],
-            "location_name": f"({meta['lat']}, {meta['lng']})" if meta["lat"] and meta["lng"] else "Unknown Location",
-            "image_url": artwork.image.url,
+            "image_url": temp_file.name,
         }
 
         return Response(extracted_info)
@@ -470,49 +530,48 @@ def upload_image(request):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
 @permission_classes([IsAuthenticated])
 @api_view(["GET"])
 def check_artwork_like(request, artwork_id):
     try:
         artwork = Artwork.objects.get(id=artwork_id)
-        
-        is_liked = request.user in artwork.likes.all()
-        
-        return Response({
-            'liked': is_liked,
-            'likes_count': artwork.total_likes()
-        })
-    except Artwork.DoesNotExist:
-        return Response({'error': 'Artwork not found'}, status=404)
 
-## TODO: 
+        is_liked = request.user in artwork.likes.all()
+
+        return Response({"liked": is_liked, "likes_count": artwork.total_likes()})
+    except Artwork.DoesNotExist:
+        return Response({"error": "Artwork not found"}, status=404)
+
+
+## TODO:
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def like_artwork(request, artwork_id):
-    
+
     try:
         if not request.user.is_authenticated:
-            return Response({'error': 'User not authenticated'}, status=401)
-        
+            return Response({"error": "User not authenticated"}, status=401)
+
         artwork = Artwork.objects.get(id=artwork_id)
         user = request.user
-        
+
         if user in artwork.likes.all():
             artwork.likes.remove(user)
-            action = 'unliked'
+            action = "unliked"
         else:
             artwork.likes.add(user)
-            action = 'liked'
-        
+            action = "liked"
+
         artwork.save()
         print(f"User {user.username} {action} artwork {artwork.id}")
-        
-        return Response({
-            'status': 'success',
-            'action': action,
-            'likes_count': artwork.total_likes(),
-        })
+
+        return Response(
+            {
+                "status": "success",
+                "action": action,
+                "likes_count": artwork.total_likes(),
+            }
+        )
     except Artwork.DoesNotExist:
         # If artwork doesn't exist, return error
-        return Response({'error': 'Artwork not found'}, status=404)
+        return Response({"error": "Artwork not found"}, status=404)

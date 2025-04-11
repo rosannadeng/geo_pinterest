@@ -45,7 +45,7 @@ const ProfilePage = () => {
     return <Spin size="large" />;
   }
 
-  const isOwner = (user?.user?.username || user?.username) === username;
+  const isOwner = (user?.user?.username) === username;
   return (
     <div style={{ padding: "24px" }}>
       <Row gutter={[24, 24]}>

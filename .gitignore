@@ -13,6 +13,7 @@ venv/
 ENV/
 env/
 myvenv/
+myven/
 .env
 
 # IDE
@@ -49,3 +50,5 @@ frontend/yarn-error.log*
 frontend/package-lock.json
 
 */settings.json
+
+
