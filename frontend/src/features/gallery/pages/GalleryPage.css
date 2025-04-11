@@ -9,3 +9,21 @@
     padding: 12px;
   }
 } 
+
+.upload-button {
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  padding: 1.3rem;
+  border-radius: 1rem;
+  border-color: darkblue;
+  text-align: center;
+}
+
+.gallery-footer {
+  position:sticky;
+  bottom:2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}

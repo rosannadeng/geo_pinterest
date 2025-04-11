@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Row, Col, Card, Spin } from 'antd';
+import {Button, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import MasonryGrid from '../components/MasonryGrid';
 import api from '../../../services/api';
 import './GalleryPage.css';
+import { UploadOutlined } from "@ant-design/icons";
 
 const GalleryPage = () => {
   const [artworks, setArtworks] = useState([]);
@@ -39,7 +40,18 @@ const GalleryPage = () => {
         artworks={artworks}
         onArtworkClick={handleArtworkClick}
       />
+      <div className="gallery-footer">
+        <Button className='upload-button'
+          type="primary"
+          icon={<UploadOutlined />}
+          size="small"
+          href="/artwork/create"
+        >
+          Upload New Artwork
+        </Button>
+      </div>
     </div>
+    
   );
 };
 
