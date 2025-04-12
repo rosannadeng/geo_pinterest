@@ -54,6 +54,7 @@ const AuthPage = () => {
     try {
       if (!values.username || !values.email || !values.password) {
         setRegisterErrors({ general: "Please fill in all fields" });
+        setLoading(false);
         return;
       }
 
@@ -130,7 +131,7 @@ const AuthPage = () => {
             <div style={{ marginBottom: 16 }}>
               {Object.entries(registerErrors).map(([field, error]) => (
                 <div key={field} style={{ color: 'red', marginBottom: 8 }}>
-                  {field === 'general' ? error : `${field}: ${error}`}
+                  {field === 'general' ? error : `${field}: ${typeof error === 'object' ? JSON.stringify(error) : error}`}
                 </div>
               ))}
             </div>

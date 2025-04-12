@@ -12,43 +12,23 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      checkAuth();
-    } else {
-      setLoading(false);
-    }
+    checkAuth();
   }, []);
 
   const checkAuth = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (token) {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
-          setIsAuthenticated(true);
-        } else {
-          const response = await axios.get(`${API_URL}/user`, {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          });
-          setUser(response.data);
-          setIsAuthenticated(true);
-          localStorage.setItem('user', JSON.stringify(response.data));
-        }
-      } else {
-        setIsAuthenticated(false);
-        setUser(null);
-      }
+      // With session auth, we just need to call the user endpoint
+      // If the session is valid, it will return the user data
+      const response = await axios.get(`${API_URL}/user`, {
+        withCredentials: true
+      });
+      
+      setUser(response.data);
+      setIsAuthenticated(true);
     } catch (error) {
       console.error('Auth check error:', error);
       setIsAuthenticated(false);
       setUser(null);
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
     } finally {
       setLoading(false);
     }

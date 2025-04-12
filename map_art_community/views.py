@@ -13,8 +13,6 @@ from .models import Profile, Artwork
 import mimetypes
 import json
 from .forms import LoginForm, RegisterForm, ProfileForm, ArtworkForm
-from social_core.exceptions import AuthFailed
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -94,7 +92,6 @@ class ArtworkSerializer(serializers.ModelSerializer):
 
 
 @api_view(["POST"])
-@csrf_exempt
 def login_view(request):
     if request.method == "POST":
         username = request.data.get("username")
@@ -109,10 +106,10 @@ def login_view(request):
         user = authenticate(username=username, password=password)
 
         if user is not None:
-            refresh = RefreshToken.for_user(user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')  
             profile = get_object_or_404(Profile, user=user)
             serializer = ProfileSerializer(profile)
-            return Response({"access": str(refresh.access_token), "refresh": str(refresh), "user": serializer.data})
+            return Response({"user": serializer.data})
 
         return Response({"errors": {"general": "Invalid username or password"}}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -142,6 +139,7 @@ def auth_complete(request):
             social.save()
             user.delete()
             user = existing_user
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend') 
         else:
             base_username = email.split("@")[0]
             username = base_username
@@ -160,52 +158,14 @@ def auth_complete(request):
             profile.website = ""
             profile.save()
 
-        refresh = RefreshToken.for_user(user)
         frontend_url = "http://localhost:3000"
-
         user_data = {"username": user.username, "email": email, "name": name, "picture": picture}
 
-        redirect_url = (
-            f"{frontend_url}/auth/complete?"
-            f"access={str(refresh.access_token)}&"
-            f"refresh={str(refresh)}&"
-            f"user={json.dumps(user_data)}"
-        )
+        redirect_url = f"{frontend_url}/auth/complete?user={json.dumps(user_data)}"
         return redirect(redirect_url)
 
     except Exception as e:
-        import traceback
-
         return JsonResponse({"error": "OAuth flow failed", "details": str(e)}, status=500)
-
-
-class TokenObtainPairView(APIView):
-    @csrf_exempt
-    def post(self, request):
-        username = request.data.get("username")
-        password = request.data.get("password")
-        user = authenticate(username=username, password=password)
-
-        if user is not None:
-            refresh = RefreshToken.for_user(user)
-            profile = get_object_or_404(Profile, user=user)
-            serializer = ProfileSerializer(profile)
-            return Response({"access": str(refresh.access_token), "refresh": str(refresh), "user": serializer.data})
-        return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
-
-
-class TokenRefreshView(APIView):
-    @csrf_exempt
-    def post(self, request):
-        refresh_token = request.data.get("refresh")
-        if not refresh_token:
-            return Response({"error": "Refresh token is required"}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            refresh = RefreshToken(refresh_token)
-            return Response({"access": str(refresh.access_token)})
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class UserView(APIView):
@@ -219,24 +179,27 @@ class UserView(APIView):
 
 
 @api_view(["POST"])
-@csrf_exempt
 def register_view(request):
     if request.method == "POST":
         form = RegisterForm(request.data)
         if form.is_valid():
             try:
                 user = form.register_user()
-                refresh = RefreshToken.for_user(user)
                 return Response(
                     {
-                        "access": str(refresh.access_token),
-                        "refresh": str(refresh),
+                        'message': 'Registration successful, please login',
                         "redirect_url": f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/auth",
                     }
                 )
             except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"error": form.errors}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"errors": {"general": str(e)}}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Convert Django form errors to a format that works with frontend
+        errors = {}
+        for field, error_list in form.errors.items():
+            errors[field] = error_list[0] if error_list else "Invalid data"
+        
+        return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET"])
@@ -261,11 +224,8 @@ def get_photo(request, username):
 @permission_classes([IsAuthenticated])
 def logout_view(request):
     try:
-        refresh_token = request.data.get("refresh")
-        if refresh_token:
-            token = RefreshToken(refresh_token)
-            return Response({"message": "Successfully logged out"})
-        return Response({"error": "Refresh token is required"}, status=status.HTTP_400_BAD_REQUEST)
+        logout(request)  # Use Django session logout
+        return Response({"message": "Successfully logged out"})
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -320,12 +280,14 @@ class ProfileViewSet(ModelViewSet):
     lookup_url_kwarg = "username"
 
     def get_queryset(self):
-        if self.action == "list":
-            return Profile.objects.filter(user=self.request.user)
-        username = self.kwargs.get("username")
-        if username:
-            return Profile.objects.filter(user__username=username)
-        return Profile.objects.none()
+        queryset = Artwork.objects.all().order_by("-upload_date")
+        artist_username = self.request.query_params.get('artist')
+
+        if artist_username:
+            queryset = queryset.filter(artist__username=artist_username)
+
+        return queryset
+
 
     def get_object(self):
         username = self.kwargs.get("username")
@@ -360,7 +322,12 @@ class ArtworkViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Artwork.objects.all().order_by("-upload_date")
+        queryset = Artwork.objects.all().order_by("-upload_date")
+        artist_username = self.request.query_params.get('artist')
+        
+        if artist_username:
+            queryset = queryset.filter(artist__username=artist_username)
+        return queryset
 
     def perform_create(self, serializer):
         if "image" not in self.request.FILES:
@@ -419,40 +386,6 @@ class GalleryView(APIView):
 def social_auth_error(request):
     return Response({"error": "Authentication failed. Please try again."}, status=status.HTTP_401_UNAUTHORIZED)
 
-
-@api_view(["GET"])
-def oauth_complete(request):
-    if request.user.is_authenticated:
-        social = request.user.social_auth.get(provider="google-oauth2")
-        response = requests.get(
-            "https://www.googleapis.com/oauth2/v1/userinfo", params={"access_token": social.extra_data["access_token"]}
-        )
-        google_info = response.json()
-
-        email = google_info.get("email")
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            user = request.user
-            user.email = email
-            user.save()
-
-        refresh = RefreshToken.for_user(user)
-        profile = get_object_or_404(Profile, user=user)
-        serializer = ProfileSerializer(profile)
-
-        redirect_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
-        redirect_url += "/gallery"
-
-        return Response(
-            {
-                "access": str(refresh.access_token),
-                "refresh": str(refresh),
-                "user": serializer.data,
-                "redirect_url": redirect_url,
-            }
-        )
-    return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 @api_view(["GET"])
