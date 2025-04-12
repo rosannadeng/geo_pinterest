@@ -477,6 +477,7 @@ def check_artwork_like(request, artwork_id):
 
 
 ## TODO:
+@csrf_exempt
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def like_artwork(request, artwork_id):
