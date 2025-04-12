@@ -49,7 +49,7 @@ urlpatterns = [
     path("artwork/create", views.ArtworkViewSet.as_view({"post": "create"}), name="artwork_create"),
     path("artwork/<int:pk>/update", views.ArtworkViewSet.as_view({"put": "update"}), name="artwork_update"),
     path("artwork/upload-image", views.upload_image, name="upload_image"),
-    path("artwork/<int:pk>/", views.ArtworkViewSet.as_view({"get": "retrieve"}), name="artwork_detail"),
+    path("artwork/<int:pk>", views.ArtworkViewSet.as_view({"get": "retrieve"}), name="artwork_detail"),
     path("gallery", views.GalleryView.as_view(), name="gallery"),
     path("oauth/", include("social_django.urls", namespace="social")),
 
