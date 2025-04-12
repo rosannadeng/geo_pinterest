@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import './ArtworkCard.css';
+import LikeButton from './LikeButton';
 
 const { Meta } = Card;
 const { Text } = Typography;
@@ -102,30 +103,13 @@ const ArtworkCard = ({ artwork, onLike }) => {
       className="artwork-card"
       cover={
         <div className="artwork-card-cover">
-          <Image alt={artwork.title} src={artwork.image} preview={false} />
+          <Image alt={artwork.title} src={artwork.image} preview={false} className="artwork-card-image" />
 
           <div className="like-icon">
-            <Tooltip title={liked ? 'Unlike' : 'Like'}>
-              {liked ? (
-                <HeartFilled
-                  key="like"
-                  style={{ color: 'red' }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleLike();
-                  }}
-                />
-              ) : (
-                <HeartOutlined
-                  key="like"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleLike();
-                  }}
-                />
-              )}
-              <span> {likesCount}</span>
-            </Tooltip>
+            <LikeButton 
+                artworkId={artwork.id} 
+                initialLikes={artwork.total_likes}
+            />
         </div>
 
         <div className="mask" onClick={() => handleView(artwork.id)}>

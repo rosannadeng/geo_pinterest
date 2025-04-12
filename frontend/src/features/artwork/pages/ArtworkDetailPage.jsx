@@ -6,6 +6,7 @@ import api from '../../../services/api';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { HeartFilled, HeartOutlined, EnvironmentOutlined, ClockCircleOutlined, EditOutlined } from '@ant-design/icons';
+import LikeButton from '../../../common/LikeButton';
 const { Title, Text, Paragraph } = Typography;
 
 
@@ -93,10 +94,10 @@ const ArtworkDetailPage = () => {
                 </Space>
               </Col>
               <Col>
-                <Space>
-                    <HeartFilled />
-                    <Text>{artwork.total_likes}</Text>
-                </Space>
+                <LikeButton 
+                  artworkId={artwork.id} 
+                  initialLikes={artwork.total_likes}
+                />
               </Col>
             </Row>
 
