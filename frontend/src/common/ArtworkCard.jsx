@@ -4,6 +4,7 @@ import { UserOutlined, EnvironmentOutlined, HeartOutlined, HeartFilled, EyeOutli
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import './ArtworkCard.css';
 
 const { Meta } = Card;
 const { Text } = Typography;
@@ -85,10 +86,13 @@ const ArtworkCard = ({ artwork, onLike }) => {
     }
   };
 
-  const handleView = (artwork) => {
+  const handleView = (artworkId) => {
     // TODO: Implement artwork details view
-    console.log('Viewing artwork:', artwork);
-    navigate(`/artwork/${artwork.id}`);
+    console.log('Viewing artwork:', artworkId);
+    navigate(`/artwork/${artworkId}`);
+    // navigate(`/artwork/${artwork.id}`);
+
+    
   };
 
   
@@ -124,13 +128,13 @@ const ArtworkCard = ({ artwork, onLike }) => {
             </Tooltip>
         </div>
 
-        <div className="mask" onClick={() => handleView(artwork)}>
-          <Tooltip title="View Details">
+        <div className="mask" onClick={() => handleView(artwork.id)}>
             <EyeOutlined key="view" onClick={(e) => {
                   e.stopPropagation();
-            }}
-          />
-        </Tooltip>
+              }}
+            />
+            <span>View Details</span>
+
       </div>
 
         </div>

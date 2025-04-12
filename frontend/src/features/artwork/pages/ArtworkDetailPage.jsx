@@ -1,10 +1,13 @@
 // #Todo:add detail artwork page link user profile, artwork like
 import React, { useState, useEffect } from 'react';
-import { Layout, Image, Card } from 'antd';
-import { useParams } from 'react-router-dom';
+import { Layout, Image, Card, Row, Col, Typography, Tooltip, message, Space, Avatar } from 'antd';
+import { useParams, Link } from 'react-router-dom';
 import api from '../../../services/api';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { HeartFilled, HeartOutlined, EnvironmentOutlined, ClockCircleOutlined, EditOutlined } from '@ant-design/icons';
+const { Title, Text, Paragraph } = Typography;
+
 
 
 const ArtworkDetailPage = () => {
@@ -24,14 +27,82 @@ const ArtworkDetailPage = () => {
     fetchArtwork();
    }, [artwork]);
 
+   const navigate = useNavigate();
+
+   const handleMapClick = () => {
+    navigate(`/map`);
+   }
   
 
 
 
     return (
-        <Card>
-            {artwork && <Image src={artwork.image} />}
-        </Card>
+        <Card style={{ margin:'40px auto',width:'80%',borderRadius: 16, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+        <Row gutter={32}>
+
+          <Col span={14}>
+            <Image
+              src={artwork.image}
+              alt={artwork.title}
+              style={{ width: '100%', borderRadius: '12px' }}
+            />
+          </Col>
+  
+          {/* 右侧文字 */}
+          <Col span={10} >
+
+            <Title level={3} style={{ marginBottom: 8 }}>{artwork.title}</Title>
+  
+            <Space size="middle" style={{ marginBottom: 16 }}>
+              <Tooltip title="View user profile">
+                <Link to={`/profile/${artwork.artist_username}`}>
+                  <Avatar src={`${artwork.artist_profile_picture}`} />
+                </Link>
+              </Tooltip>
+              <Link to={`/user/${artwork.artist}`}>
+                <Text strong>@{artwork.artist_username}</Text>
+              </Link>
+            </Space>
+            
+  
+            <Paragraph >{artwork.description}</Paragraph>
+
+  
+
+
+            <Space style={{ display: 'flex', marginBottom: 8 }}>
+              <ClockCircleOutlined />
+              <Text type="secondary">{new Date(artwork.creation_date).toLocaleDateString()}</Text>
+            </Space>
+
+            <Space style={{ display: 'flex', marginBottom: 8 }}>
+              <EditOutlined />
+              <Text type="secondary">{artwork.medium}</Text>
+            </Space>
+
+            <Row justify="space-between" align="middle">
+              <Col>
+                <Space
+                  style={{ cursor: 'pointer' }}
+                  onClick={handleMapClick}
+                >
+                  <Tooltip title="View on map">
+                    <EnvironmentOutlined />
+                  </Tooltip>
+                  <Text type="secondary">{artwork.location_name}</Text>
+                </Space>
+              </Col>
+              <Col>
+                <Space>
+                    <HeartFilled />
+                    <Text>{artwork.total_likes}</Text>
+                </Space>
+              </Col>
+            </Row>
+
+          </Col>
+        </Row>
+      </Card>
     );
 };
 
