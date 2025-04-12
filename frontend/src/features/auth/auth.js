@@ -1,21 +1,32 @@
 import axios from 'axios';
 import Cookies from "js-cookie"; 
 
-const csrfToken = Cookies.get("csrftoken");
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 const auth = {
+  // Function to get CSRF token
+  getCSRFToken: async () => {
+    try {
+      // Make a request to get a new CSRF token
+      await axios.get(`${API_URL}/get_csrf_token`, { withCredentials: true });
+      return Cookies.get("csrftoken");
+    } catch (error) {
+      console.error('Error getting CSRF token:', error);
+      return null;
+    }
+  },
+
   login: async (credentials) => {
     try {
-      const response = await axios.post(`${API_URL}/login`, credentials);
-      if (response.data) {
-        localStorage.setItem('token', response.data.access);
-        localStorage.setItem('refreshToken', response.data.refresh);
-        const userResponse = await axios.get(`${API_URL}/user`, {
-          headers: {
-            Authorization: `Bearer ${response.data.access}`
-          }
-        });
-        localStorage.setItem('user', JSON.stringify(userResponse.data));
+      // Get fresh CSRF token before login
+      const csrfToken = await auth.getCSRFToken();
+      
+      const response = await axios.post(`${API_URL}/login`, credentials, {
+        withCredentials: true,
+        headers: {
+          "X-CSRFToken": csrfToken,
+        }
+      });
+      if (response.data && response.data.user) {
         return true;
       }
       return false;
@@ -27,6 +38,7 @@ const auth = {
 
   register: async (userData) => {
     try {
+      const csrfToken = await auth.getCSRFToken();
       const response = await axios.post(`${API_URL}/register`, userData, {
         headers: {
           "X-CSRFToken": csrfToken,
@@ -42,18 +54,13 @@ const auth = {
 
   logout: async () => {
     try {
-      const token = localStorage.getItem('token');
-      const refreshToken = localStorage.getItem('refreshToken');
-      if (refreshToken) {
-        await axios.post(`${API_URL}/logout`, { refresh: refreshToken }, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-      }
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
+      const csrfToken = await auth.getCSRFToken();
+      await axios.post(`${API_URL}/logout`, {}, {
+        withCredentials: true,
+        headers: {
+          "X-CSRFToken": csrfToken,
+        }
+      });
     } catch (error) {
       console.error('Logout error:', error);
       throw error;
@@ -62,11 +69,8 @@ const auth = {
 
   getCurrentUser: async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await axios.get(`${API_URL}/user`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        withCredentials: true
       });
       return response.data;
     } catch (error) {
