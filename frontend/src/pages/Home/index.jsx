@@ -1,6 +1,7 @@
 import React from 'react';
 import { Layout } from 'antd';
 import AppSider from '../../common/AppSider';
+import ArtworkMap from '../Map/index';
 
 const { Content } = Layout;
 
@@ -8,7 +9,7 @@ const Home = () => {
   return (
     <Layout>
         <Content>
-            <h1>Home Page</h1>
+            <ArtworkMap />
         </Content>
     </Layout>
   );
