@@ -31,12 +31,11 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.GalleryView.as_view(), name="home"),
     path("register", views.register_view, name="register"),
-    path("token", views.TokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("token/refresh", views.TokenRefreshView.as_view(), name="token_refresh"),
     path("auth/complete", views.auth_complete, name="auth_complete"),
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
     path("user", views.UserView.as_view(), name="user"),
+    path("get_csrf_token", views.get_csrf_token, name="get_csrf_token"),
     path("profile", views.ProfileViewSet.as_view({"get": "list"}), name="profile_list"),
     path(
         "profile/<str:username>",
