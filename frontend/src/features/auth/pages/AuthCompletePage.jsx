@@ -8,16 +8,12 @@ const AuthCompletePage = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const access = params.get("access");
-    const refresh = params.get("refresh");
     const userStr = params.get("user");
 
-    if (access && refresh && userStr) {
+    if (userStr) {
       try {
-        const user = JSON.parse(userStr);
-        localStorage.setItem("token", access);
-        localStorage.setItem("refreshToken", refresh);
-        localStorage.setItem("user", JSON.stringify(user));
+        // With session auth, the user is already authenticated via cookies
+        // We just need to parse the user data if available
         navigate("/gallery");
       } catch (error) {
         console.error("Error parsing user data:", error);
