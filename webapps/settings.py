@@ -190,13 +190,18 @@ SOCIAL_AUTH_PIPELINE = (
 
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.SessionAuthentication",
+    ),
 }
 
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-}
+# URL settings
+APPEND_SLASH = True
+
+# Session settings for better security
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'  # Less restrictive to allow redirects
+SESSION_COOKIE_SECURE = False    # Set to True in production with HTTPS
 
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [

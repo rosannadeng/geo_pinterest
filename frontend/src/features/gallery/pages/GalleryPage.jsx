@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import MasonryGrid from '../components/MasonryGrid';
 import api from '../../../services/api';
 import './GalleryPage.css';
-import { UploadOutlined } from "@ant-design/icons";
+import { PlusOutlined } from "@ant-design/icons";
 
 const GalleryPage = () => {
   const [artworks, setArtworks] = useState([]);
@@ -43,11 +43,10 @@ const GalleryPage = () => {
       <div className="gallery-footer">
         <Button className='upload-button'
           type="primary"
-          icon={<UploadOutlined />}
-          size="small"
+          icon={<PlusOutlined />}
+          size = "large"
           href="/artwork/create"
         >
-          Upload New Artwork
         </Button>
       </div>
     </div>
