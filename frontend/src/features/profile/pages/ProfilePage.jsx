@@ -7,6 +7,7 @@ import ProfileCard from "../components/ProfileCard";
 import ArtworkGrid from "../components/ArtworkGrid";
 import { useParams } from 'react-router-dom';
 import api from '../../../services/api';
+import ArtworkCard from '../../../common/ArtworkCard';
 
 
 const ProfilePage = () => {
