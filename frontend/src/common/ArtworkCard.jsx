@@ -8,7 +8,7 @@ import './ArtworkCard.css';
 import LikeButton from './LikeButton';
 
 const { Meta } = Card;
-const { Text } = Typography;
+const { Text,Title } = Typography;
 
 // Function that gets the CSRF token from the cookie  
 const getCSRFToken = () => {
@@ -99,33 +99,42 @@ const ArtworkCard = ({ artwork, onLike }) => {
   
 
   return (
-    <Card 
-      className="artwork-card"
-      cover={
-        <div className="artwork-card-cover">
-          <Image alt={artwork.title} src={artwork.image} preview={false} className="artwork-card-image" />
+<Card 
+  className="artwork-card"
+  hoverable
+  cover={
+    <div className="artwork-card-cover">
+      <Image
+        alt={artwork.title}
+        src={artwork.image}
+        preview={false}
+        className="artwork-card-image"
+      />
 
-          <div className="like-icon">
-            <LikeButton 
-                artworkId={artwork.id} 
-                initialLikes={artwork.total_likes}
-            />
-        </div>
-
-        <div className="mask" onClick={() => handleView(artwork.id)}>
-            <EyeOutlined key="view" onClick={(e) => {
-                  e.stopPropagation();
-              }}
-            />
-            <span>View Details</span>
-
+      {/* 右上角 Like 按钮 */}
+      <div className="like-icon">
+        <LikeButton
+          artworkId={artwork.id}
+          initialLikes={artwork.total_likes}
+        />
       </div>
 
+      {/* Hover 时显示的遮罩 */}
+      <div className="mask" onClick={() => handleView(artwork.id)}>
+        {/* 中心 View Details */}
+        <div className="mask-center" onClick={(e) => e.stopPropagation()}>
+          <EyeOutlined />
+          <span style={{ marginLeft: 8 }}>View Details</span>
         </div>
-      }
-      hoverable={true}
-    >
-  </Card>
+
+        {/* 底部左侧 Title */}
+        <Title className="mask-title">
+          <span className="artwork-title">{artwork.title}</span>
+        </Title>
+      </div>
+    </div>
+  }
+/>
   );
 };
 
