@@ -11,17 +11,41 @@
 } 
 
 .upload-button {
-  margin-bottom: 2rem;
-  font-size: 2rem;
-  padding: 1.3rem;
-  border-radius: 1rem;
-  border-color: darkblue;
-  text-align: center;
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  border-radius: 50%;
+  background-color: #1890ff;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  min-width: 70px;
+  min-height: 70px;
+}
+
+.upload-button:hover {
+  background-color: #40a9ff;
+  transform: scale(1.1);
+}
+
+.upload-button:hover .anticon {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease-in-out;
+}
+
+.upload-button .anticon {
+  transition: transform 0.3s ease-in-out;
 }
 
 .gallery-footer {
-  position:sticky;
-  bottom:2rem;
+  position: sticky;
+  bottom: 2rem;
   display: flex;
   justify-content: center;
   align-items: center;
