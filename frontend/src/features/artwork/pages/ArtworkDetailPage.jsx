@@ -29,7 +29,7 @@ const ArtworkDetailPage = () => {
    }, [artwork]);
 
    const navigate = useNavigate();
-
+   // todo: add artwork on map feature
    const handleMapClick = () => {
     navigate(`/map`);
    }
