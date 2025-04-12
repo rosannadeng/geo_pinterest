@@ -11,81 +11,47 @@ const { Meta } = Card;
 const { Text,Title } = Typography;
 
 
-const ArtworkCard = ({ artwork, onLike }) => {
-  const [liked, setLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(artwork.total_likes || 0);
-
-  const { user } = useAuth();
+const ArtworkCard = ({ artwork }) => {
   const navigate = useNavigate();
-  
-
-  useEffect(() => {
-    const checkIfLiked = async () => {
-      if (user && user.user) { 
-        try {
-          const response = await api.get(`/artwork/${artwork.id}/check_if_liked/`);
-          setLiked(response.data.liked);
-          setLikesCount(response.data.likes_count);
-        } catch (error) {
-          console.error('Error checking if artwork is liked:', error);
-        }
-      }
-    };
-
-    if (artwork.id) {
-      checkIfLiked();
-    }
-  }, [user, artwork.id]);
-
-  useEffect(() => {
-    console.log('Artwork object:', artwork);
-  }, [artwork]);
-
 
   const handleView = (artworkId) => {
-    // TODO: Implement artwork details view
     console.log('Viewing artwork:', artworkId);
     navigate(`/artwork/${artworkId}`);
-    // navigate(`/artwork/${artwork.id}`);
-
-    
   };
 
-  
-
   return (
-<Card 
-  className="artwork-card"
-  hoverable
-  cover={
-    <div className="artwork-card-cover">
-      <Image
-        alt={artwork.title}
-        src={artwork.image}
-        preview={false}
-        className="artwork-card-image"
-      />
+    <Card 
+      className="artwork-card"
+      hoverable
+      cover={
+        <div className="artwork-card-cover">
+          <Image
+            alt={artwork.title}
+            src={artwork.image}
+            preview={false}
+            className="artwork-card-image"
+          />
 
-      <div className="like-icon">
-        <LikeButton
-          artworkId={artwork.id}
-          initialLikes={artwork.total_likes}
-        />
-      </div>
+          <div className="like-icon">
+            <LikeButton
+              artworkId={artwork.id}
+              initialLikes={artwork.total_likes}      
+            />
+          </div>
 
-      <div className="mask" onClick={() => handleView(artwork.id)}>
-        <div className="mask-center" onClick={(e) => e.stopPropagation()}>
-          <EyeOutlined />
-          <span style={{ marginLeft: 8 }}>View Details</span>
+          <div className="mask" onClick={() => handleView(artwork.id)}>
+            <div className="mask-center" onClick={(e) => e.stopPropagation()}>
+              <EyeOutlined />
+              <span style={{ marginLeft: 8 }}>View Details</span>
+            </div>
+
+            <Title className="mask-title">
+              <span className="artwork-title">{artwork.title}</span>
+            </Title>
+          </div>
         </div>
-
-        <Title className="mask-title">
-          <span className="artwork-title">{artwork.title}</span>
-        </Title>
-      </div>
-    </div>
-  }
-/>
+      }
+    />
   );
 };
 
