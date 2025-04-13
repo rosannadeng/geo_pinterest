@@ -8,19 +8,27 @@ import './ArtworkCard.css';
 import LikeButton from './LikeButton';
 
 const { Meta } = Card;
-const { Text,Title } = Typography;
+const { Text, Title } = Typography;
 
 
-const ArtworkCard = ({ artwork }) => {
+const ArtworkCard = ({ artwork, setMapCenter }) => {
   const navigate = useNavigate();
 
   const handleView = (artworkId) => {
     console.log('Viewing artwork:', artworkId);
-    navigate(`/artwork/${artworkId}`);
+    if (setMapCenter) {
+      setMapCenter({
+        lat: artwork.latitude,
+        lng: artwork.longitude,
+      });
+    }
+    else {
+      navigate(`/artwork/${artworkId}`);
+    }
   };
 
   return (
-    <Card 
+    <Card
       className="artwork-card"
       hoverable
       cover={
@@ -35,7 +43,7 @@ const ArtworkCard = ({ artwork }) => {
           <div className="like-icon">
             <LikeButton
               artworkId={artwork.id}
-              initialLikes={artwork.total_likes}      
+              initialLikes={artwork.total_likes}
             />
           </div>
 

@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Layout, Spin } from 'antd';
-import { GoogleMap, Marker, InfoWindow, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, Marker, InfoWindow } from '@react-google-maps/api';
 import api from '../../services/api';
 import ArtworkCard from '../../common/ArtworkCard';
 import AppSider from '../../common/AppSider';
+import { useGoogleMaps } from '../../contexts/GoogleMapsContext';
 
 const { Content } = Layout;
 
@@ -18,15 +19,12 @@ const defaultCenter = {
     lng: -98.5795,
 };
 
-const ArtworkMap = () => {
+const ArtworkMap = ({ center, setCenter }) => {
     const [artworks, setArtworks] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [center, setCenter] = useState(defaultCenter);
     const [openInfoWindows, setOpenInfoWindows] = useState({});
 
-    const { isLoaded } = useJsApiLoader({
-        googleMapsApiKey: 'AIzaSyBdMx5mw7syNkmrDG_2lTfkLyZP_Dqdvr4',
-    });
+    const { isLoaded } = useGoogleMaps();
 
     useEffect(() => {
         const fetchArtworks = async () => {
@@ -53,7 +51,7 @@ const ArtworkMap = () => {
         };
 
         fetchArtworks();
-    }, []);
+    }, [setCenter]);
 
     const handleMarkerClick = (artworkId) => {
         setOpenInfoWindows(prev => ({ ...prev, [artworkId]: true }));
@@ -103,11 +101,13 @@ const ArtworkMap = () => {
 };
 
 const MapPage = () => {
+    const [center, setCenter] = useState(defaultCenter);
+
     return (
         <Layout>
-            <AppSider />
+            <AppSider setMapCenter={setCenter} />
             <Content>
-                <ArtworkMap />
+                <ArtworkMap center={center} setCenter={setCenter} />
             </Content>
         </Layout>
     );
