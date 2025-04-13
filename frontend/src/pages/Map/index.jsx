@@ -18,10 +18,9 @@ const defaultCenter = {
     lng: -98.5795,
 };
 
-const ArtworkMap = () => {
+const ArtworkMap = ({ center, setCenter }) => {
     const [artworks, setArtworks] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [center, setCenter] = useState(defaultCenter);
     const [openInfoWindows, setOpenInfoWindows] = useState({});
 
     const { isLoaded } = useJsApiLoader({
@@ -53,7 +52,7 @@ const ArtworkMap = () => {
         };
 
         fetchArtworks();
-    }, []);
+    }, [setCenter]);
 
     const handleMarkerClick = (artworkId) => {
         setOpenInfoWindows(prev => ({ ...prev, [artworkId]: true }));
@@ -103,11 +102,13 @@ const ArtworkMap = () => {
 };
 
 const MapPage = () => {
+    const [center, setCenter] = useState(defaultCenter);
+
     return (
         <Layout>
-            <AppSider />
+            <AppSider setMapCenter={setCenter} />
             <Content>
-                <ArtworkMap />
+                <ArtworkMap center={center} setCenter={setCenter} />
             </Content>
         </Layout>
     );
