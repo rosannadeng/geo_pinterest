@@ -5,7 +5,8 @@ import ImageUploader from '../components/ImageUploader';
 import api from '../../../services/api';
 import dayjs from 'dayjs';
 import { useAuth } from '../../../contexts/AuthContext';
-import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
+import { GoogleMap, Marker } from '@react-google-maps/api';
+import { useGoogleMaps } from '../../../contexts/GoogleMapsContext';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -29,10 +30,7 @@ const CreateArtworkPage = () => {
   const [mapInstance, setMapInstance] = useState(null);
   const searchInputRef = useRef(null);
 
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: 'AIzaSyBdMx5mw7syNkmrDG_2lTfkLyZP_Dqdvr4',
-    libraries: ['places'],
-  });
+  const { isLoaded } = useGoogleMaps();
 
   useEffect(() => {
     if (isLoaded && searchInputRef.current) {

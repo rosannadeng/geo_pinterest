@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Layout, Spin } from 'antd';
-import { GoogleMap, Marker, InfoWindow, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, Marker, InfoWindow } from '@react-google-maps/api';
 import api from '../../services/api';
 import ArtworkCard from '../../common/ArtworkCard';
 import AppSider from '../../common/AppSider';
+import { useGoogleMaps } from '../../contexts/GoogleMapsContext';
 
 const { Content } = Layout;
 
@@ -23,9 +24,7 @@ const ArtworkMap = ({ center, setCenter }) => {
     const [loading, setLoading] = useState(true);
     const [openInfoWindows, setOpenInfoWindows] = useState({});
 
-    const { isLoaded } = useJsApiLoader({
-        googleMapsApiKey: 'AIzaSyBdMx5mw7syNkmrDG_2lTfkLyZP_Dqdvr4',
-    });
+    const { isLoaded } = useGoogleMaps();
 
     useEffect(() => {
         const fetchArtworks = async () => {
