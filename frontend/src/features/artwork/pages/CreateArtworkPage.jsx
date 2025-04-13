@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Form, Input, DatePicker, Select, Button, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import ImageUploader from '../components/ImageUploader';
 import api from '../../../services/api';
 import dayjs from 'dayjs';
 import { useAuth } from '../../../contexts/AuthContext';
-import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
+import { GoogleMap, Marker } from '@react-google-maps/api';
+import { useGoogleMaps } from '../../../contexts/GoogleMapsContext';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -26,10 +27,43 @@ const CreateArtworkPage = () => {
   const navigate = useNavigate();
   const [imageInfo, setImageInfo] = useState(null);
   const [markerPosition, setMarkerPosition] = useState(null);
+  const [mapInstance, setMapInstance] = useState(null);
+  const searchInputRef = useRef(null);
 
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: 'AIzaSyBdMx5mw7syNkmrDG_2lTfkLyZP_Dqdvr4',
-  });
+  const { isLoaded } = useGoogleMaps();
+
+  useEffect(() => {
+    if (isLoaded && searchInputRef.current) {
+      const autoComplete = new window.google.maps.places.Autocomplete(
+        searchInputRef.current.input
+      );
+
+      autoComplete.addListener('place_changed', () => {
+        const place = autoComplete.getPlace();
+        if (!place.geometry || !place.geometry.location) {
+          message.error('No details available for this place');
+          return;
+        }
+
+        const location = {
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng(),
+        };
+
+        setMarkerPosition(location);
+        form.setFieldsValue({
+          latitude: location.lat,
+          longitude: location.lng,
+          location_name: place.name,
+        });
+
+        if (mapInstance) {
+          mapInstance.panTo(location);
+          mapInstance.setZoom(15);
+        }
+      });
+    }
+  }, [isLoaded, mapInstance, form]);
 
   const fetchLocationName = async (lat, lng) => {
     try {
@@ -37,11 +71,7 @@ const CreateArtworkPage = () => {
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=AIzaSyBdMx5mw7syNkmrDG_2lTfkLyZP_Dqdvr4`
       );
       const data = await response.json();
-      if (data.status === 'OK' && data.results.length > 0) {
-        return data.results[0].formatted_address;
-      } else {
-        return '';
-      }
+      return data.results[0]?.formatted_address || '';
     } catch (error) {
       console.error('Error fetching location name:', error);
       return '';
@@ -96,8 +126,7 @@ const CreateArtworkPage = () => {
         formData.append('longitude', markerPosition.lng);
       }
 
-      let response;
-      response = await api.post('/artwork/create', formData, {
+      const response = await api.post('/artwork/create', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'X-CSRFToken': getCookie('csrftoken'),
@@ -121,7 +150,7 @@ const CreateArtworkPage = () => {
       const cookies = document.cookie.split(';');
       for (let i = 0; i < cookies.length; i++) {
         const cookie = cookies[i].trim();
-        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        if (cookie.startsWith(name + '=')) {
           cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
           break;
         }
@@ -183,7 +212,10 @@ const CreateArtworkPage = () => {
           label="Location"
           rules={[{ required: true, message: 'Please input the location!' }]}
         >
-          <Input />
+          <Input
+            ref={searchInputRef}
+            placeholder="Search for a location"
+          />
         </Form.Item>
 
         <Form.Item name="latitude" style={{ display: 'none' }}>
@@ -202,6 +234,7 @@ const CreateArtworkPage = () => {
               center={markerPosition || defaultCenter}
               zoom={markerPosition ? 12 : 4}
               onClick={handleMapClick}
+              onLoad={map => setMapInstance(map)}
             >
               {markerPosition && <Marker position={markerPosition} />}
             </GoogleMap>
