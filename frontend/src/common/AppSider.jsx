@@ -6,7 +6,7 @@ import api from '../services/api';
 import { useEffect, useState } from 'react';
 const { Sider } = Layout;
 
-const AppSider = () => {
+const AppSider = ({ setMapCenter }) => {
 
   const [artworks, setArtworks] = useState([]);
 
@@ -30,7 +30,7 @@ const AppSider = () => {
       }}>
       <Flex vertical gap={16}>
         {artworks.map((artwork) => (
-          <ArtworkCard key={artwork.id} artwork={artwork} />
+          <ArtworkCard key={artwork.id} artwork={artwork} setMapCenter={setMapCenter} />
         ))}
       </Flex>
 
