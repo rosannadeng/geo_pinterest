@@ -10,6 +10,11 @@
   }
 } 
 
+.gallery-container {
+  position: relative;
+  z-index: 3;
+}
+
 .upload-button {
   position: fixed;
   bottom: 2rem;
@@ -27,6 +32,7 @@
   padding: 0;
   min-width: 70px;
   min-height: 70px;
+  z-index: 1000;
 }
 
 .upload-button:hover {
@@ -44,10 +50,6 @@
 }
 
 .gallery-footer {
-  position: sticky;
-  bottom: 2rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
+  position: relative;
+  z-index: 1000;
 }
