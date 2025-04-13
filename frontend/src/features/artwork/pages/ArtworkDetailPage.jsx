@@ -26,7 +26,7 @@ const ArtworkDetailPage = () => {
         console.log(response.data);
     };
     fetchArtwork();
-   }, [artwork]);
+   }, [artworkId]);
 
    const navigate = useNavigate();
    // todo: add artwork on map feature
