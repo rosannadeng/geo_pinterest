@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 
+
 const getCSRFToken = () => {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -21,7 +22,7 @@ const getCSRFToken = () => {
   };
 
 
-const LikeButton = ({ artworkId, initialLikes = 0, showCount = true }) => {
+const LikeButton = ({ artworkId, initialLikes = 0, showCount = true, onLikeChange }) => {
     const [liked, setLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(initialLikes);
     const { user } = useAuth();
@@ -71,6 +72,10 @@ const LikeButton = ({ artworkId, initialLikes = 0, showCount = true }) => {
             
             console.log('Like response:', response.data);
             setLikesCount(response.data.likes_count);
+            
+            if (onLikeChange) {
+                onLikeChange();
+            }
         } catch (error) {
             console.error('Error liking artwork:', error);
             setLiked(!liked);

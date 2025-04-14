@@ -1,5 +1,7 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Form, Input, DatePicker, Select, Button, message } from 'antd';
+
 import { useNavigate } from 'react-router-dom';
 import ImageUploader from '../components/ImageUploader';
 import api from '../../../services/api';
@@ -27,6 +29,7 @@ const CreateArtworkPage = () => {
   const navigate = useNavigate();
   const [imageInfo, setImageInfo] = useState(null);
   const [markerPosition, setMarkerPosition] = useState(null);
+
   const [mapInstance, setMapInstance] = useState(null);
   const searchInputRef = useRef(null);
 
@@ -76,6 +79,56 @@ const CreateArtworkPage = () => {
       console.error('Error fetching location name:', error);
       return '';
     }
+  };
+
+  const searchLocation = async (query) => {
+    if (!query) {
+      setLocationOptions([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=AIzaSyBdMx5mw7syNkmrDG_2lTfkLyZP_Dqdvr4`
+      );
+      const data = await response.json();
+      
+      if (data.status === 'OK') {
+        const options = data.results.map(result => ({
+          value: result.formatted_address,
+          label: result.formatted_address,
+          location: result.geometry.location
+        }));
+        setLocationOptions(options);
+      } else {
+        setLocationOptions([]);
+      }
+    } catch (error) {
+      console.error('Error searching location:', error);
+      setLocationOptions([]);
+    }
+  };
+
+  const handleLocationSearch = (value) => {
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+    
+    const timeout = setTimeout(() => {
+      searchLocation(value);
+    }, 500);
+    
+    setSearchTimeout(timeout);
+  };
+
+  const handleLocationSelect = (value, option) => {
+    const { lat, lng } = option.location;
+    setMarkerPosition({ lat, lng });
+    form.setFieldsValue({
+      latitude: lat,
+      longitude: lng,
+      location_name: value,
+    });
   };
 
   const handleImageUploaded = async (info) => {
