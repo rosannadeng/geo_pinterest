@@ -19,8 +19,6 @@ const OAuthCallback = () => {
             if (user) {
               if (user.redirect_url) {
                 window.location.href = user.redirect_url;
-              } else if (user.is_new_user) {
-                navigate('/profile/setup');
               } else {
                 navigate(`/profile/${user.user.username}`);
               }

@@ -24,6 +24,7 @@ const CommentSection = ({ artworkId }) => {
         try {
             const response = await artwork.getComments(artworkId);
             setComments(response.data);
+            console.log(response.data);
         } catch (error) {
             console.error('Error fetching comments:', error);
         }
@@ -47,13 +48,7 @@ const CommentSection = ({ artworkId }) => {
                 comment: newComment
             });
             
-            const newCommentData = {
-                ...response.data.comment,
-                username: user.user.username,
-                user_profile_picture: user.user.profile?.profile_picture || null
-            };
-            
-            setComments([newCommentData, ...comments]);
+            setComments([response.data, ...comments]);
             setNewComment('');
             message.success('Comment posted successfully');
         } catch (error) {

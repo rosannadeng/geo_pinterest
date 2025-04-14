@@ -193,16 +193,13 @@ def auth_complete(request):
         if not email:
             return JsonResponse({"error": "No email provided by Google"}, status=400)
 
-        name = extra_data.get("fullname") or extra_data.get("name") or email.split("@")[0]
-        picture = extra_data.get("picture", "")
-
         existing_user = User.objects.filter(email=email).exclude(id=user.id).first()
         if existing_user:
             social.user = existing_user
             social.save()
             user.delete()
             user = existing_user
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend') 
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         else:
             base_username = email.split("@")[0]
             username = base_username
@@ -211,9 +208,8 @@ def auth_complete(request):
                 username = f"{base_username}{counter}"
                 counter += 1
             user.username = username
-
-        user.email = email
-        user.save()
+            user.email = email
+            user.save()
 
         profile, created = Profile.objects.get_or_create(user=user)
         if created:
@@ -222,9 +218,15 @@ def auth_complete(request):
             profile.save()
 
         frontend_url = "http://localhost:3000"
-        user_data = {"username": user.username, "email": email, "name": name, "picture": picture}
+        user_data = {
+            "username": user.username,
+            "email": email,
+            "name": extra_data.get("name", ""),
+            "picture": extra_data.get("picture", "")
+        }
 
         redirect_url = f"{frontend_url}/auth/complete?user={json.dumps(user_data)}"
+        print("Redirect URL:", redirect_url)
         return redirect(redirect_url)
 
     except Exception as e:
@@ -255,7 +257,7 @@ def register_view(request):
                     }
                 )
             except Exception as e:
-                return Response({"errors": {"general": str(e)}}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"errors": {"errors": str(e)}}, status=status.HTTP_400_BAD_REQUEST)
         
         # Convert Django form errors to a format that works with frontend
         errors = {}
@@ -284,7 +286,7 @@ def get_photo(request, username):
 
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@login_required
 def logout_view(request):
     try:
         logout(request)  # Use Django session logout
@@ -294,7 +296,7 @@ def logout_view(request):
 
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@login_required
 def profile_setup(request):
     try:
         profile = request.user.profile
@@ -338,7 +340,6 @@ def map_view(request):
 class ProfileViewSet(ModelViewSet):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
-    permission_classes = [IsAuthenticated]
     lookup_field = "user__username"
     lookup_url_kwarg = "username"
 
@@ -350,7 +351,6 @@ class ProfileViewSet(ModelViewSet):
             queryset = queryset.filter(artist__username=artist_username)
 
         return queryset
-
 
     def get_object(self):
         username = self.kwargs.get("username")
@@ -364,6 +364,12 @@ class ProfileViewSet(ModelViewSet):
     def update(self, request, *args, **kwargs):
         try:
             profile = self.get_object()
+            
+            if profile.user != request.user:
+                return Response(
+                    {"error": "You do not have permission to edit this profile"}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
 
             profile.bio = request.data.get("bio", profile.bio)
             profile.website = request.data.get("website", profile.website)
@@ -382,7 +388,6 @@ class ProfileViewSet(ModelViewSet):
 class ArtworkViewSet(ModelViewSet):
     queryset = Artwork.objects.all()
     serializer_class = ArtworkSerializer
-    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = Artwork.objects.all().order_by("-upload_date")
@@ -517,7 +522,7 @@ def _extract_metadata(image_path):
 
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@login_required
 def upload_image(request):
     if "image" not in request.FILES:
         return Response({"error": "No image provided"}, status=status.HTTP_400_BAD_REQUEST)
@@ -561,15 +566,107 @@ def check_artwork_like(request, artwork_id):
 
 
 
-## TODO:
-@csrf_exempt
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@login_required
+def add_comment(request, artwork_id):
+    try:
+        if not request.user.is_authenticated:
+            return Response({"error": "Please login to add comments"}, status=401)
+            
+        artwork = Artwork.objects.get(id=artwork_id)
+        comment_text = request.data.get('comment')
+        
+        if not comment_text or len(comment_text.strip()) == 0:
+            return Response({"error": "Comment cannot be empty"}, status=400)
+            
+        comment = Comment.objects.create(
+            artwork=artwork,
+            user=request.user,
+            comment=comment_text
+        )
+        
+        comment = Comment.objects.select_related('user', 'user__profile').get(id=comment.id)
+        serializer = CommentSerializer(comment, context={'request': request})
+        
+        return Response({
+            'id': comment.id,
+            'comment': comment.comment,
+            'created_at': comment.created_at,
+            'user': {
+                'id': comment.user.id,
+                'username': comment.user.username
+            },
+            'username': comment.user.username,
+            'user_profile_picture': request.build_absolute_uri(comment.user.profile.profile_picture.url) if hasattr(comment.user, 'profile') and comment.user.profile.profile_picture else None
+        }, status=201)
+    except Artwork.DoesNotExist:
+        return Response({"error": "Artwork not found"}, status=404)
+    except Exception as e:
+        print("Error:", str(e))
+        return Response({"error": f"Failed to add comment: {str(e)}"}, status=400)
+
+@api_view(['GET'])
+@login_required
+def get_comments(request, artwork_id):
+    try:
+        artwork = Artwork.objects.get(id=artwork_id)
+        comments = artwork.comments.all().order_by('-created_at')
+        serializer = CommentSerializer(comments, many=True, context={'request': request})
+        return Response(serializer.data)
+    except Artwork.DoesNotExist:
+        return Response({'error': 'Artwork not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(["GET"])
+@login_required
+def get_featured_artwork(request, username):
+    try:
+        user = User.objects.get(username=username)
+        profile = user.profile
+        if profile.featured_artwork:
+            serializer = ArtworkSerializer(profile.featured_artwork, context={'request': request})
+            return Response(serializer.data)
+        return Response({"message": "No featured artwork"}, status=200)
+    except User.DoesNotExist:
+        return Response({"error": "User not found"}, status=404)
+    except Profile.DoesNotExist:
+        return Response({"error": "Profile not found"}, status=404)
+
+@api_view(['GET'])
+@login_required
+def get_artwork_likers(request, artwork_id):
+    try:
+        if not request.user.is_authenticated:
+            return Response({"error": "Please login to view likers"}, status=401)
+            
+        artwork = Artwork.objects.get(id=artwork_id)
+        likers = artwork.likes.all()
+        likers_data = []
+        for liker in likers:
+            profile_picture = None
+            if hasattr(liker, 'profile') and liker.profile.profile_picture:
+                profile_picture = request.build_absolute_uri(liker.profile.profile_picture.url)
+            likers_data.append({
+                'id': liker.id,
+                'username': liker.username,
+                'profile_picture': profile_picture
+            })
+        return Response(likers_data)
+    except Artwork.DoesNotExist:
+        return Response({"error": "Artwork not found"}, status=404)
+    except Exception as e:
+        return Response({"error": f"Failed to get likers: {str(e)}"}, status=400)
+
+@api_view(['POST'])
+@login_required
 def like_artwork(request, artwork_id):
     try:
         if not request.user.is_authenticated:
-            return Response({"error": "User not authenticated"}, status=401)
-
+            return Response({"error": "Please login to like artwork"}, status=401)
+            
         artwork = Artwork.objects.get(id=artwork_id)
         user = request.user
         profile = user.profile
@@ -588,80 +685,12 @@ def like_artwork(request, artwork_id):
                 profile.save()
 
         artwork.save()
-        print(f"User {user.username} {action} artwork {artwork.id}")
-
-        return Response(
-            {
-                "status": "success",
-                "action": action,
-                "likes_count": artwork.total_likes(),
-            }
-        )
+        return Response({
+            "status": "success",
+            "action": action,
+            "likes_count": artwork.total_likes(),
+        })
     except Artwork.DoesNotExist:
         return Response({"error": "Artwork not found"}, status=404)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def add_comment(request, artwork_id):
-    try:
-        artwork = Artwork.objects.get(id=artwork_id)
-        comment = Comment.objects.create(
-            artwork=artwork,
-            user=request.user,
-            comment=request.data.get('comment')
-        )
-        serializer = CommentSerializer(comment, context={'request': request})
-        return Response({'comment': serializer.data}, status=status.HTTP_201_CREATED)
-    except Artwork.DoesNotExist:
-        return Response({'error': 'Artwork not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['GET'])
-def get_comments(request, artwork_id):
-    try:
-        artwork = Artwork.objects.get(id=artwork_id)
-        comments = artwork.comments.all().order_by('-created_at')
-        serializer = CommentSerializer(comments, many=True, context={'request': request})
-        return Response(serializer.data)
-    except Artwork.DoesNotExist:
-        return Response({'error': 'Artwork not found'}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-@api_view(["GET"])
-def get_featured_artwork(request, username):
-    try:
-        user = User.objects.get(username=username)
-        profile = user.profile
-        if profile.featured_artwork:
-            serializer = ArtworkSerializer(profile.featured_artwork, context={'request': request})
-            return Response(serializer.data)
-        return Response({"message": "No featured artwork"}, status=200)
-    except User.DoesNotExist:
-        return Response({"error": "User not found"}, status=404)
-    except Profile.DoesNotExist:
-        return Response({"error": "Profile not found"}, status=404)
-
-@api_view(['GET'])
-def get_artwork_likers(request, artwork_id):
-    try:
-        artwork = Artwork.objects.get(id=artwork_id)
-        likers = artwork.likes.all()
-        likers_data = []
-        for liker in likers:
-            profile_picture = None
-            if hasattr(liker, 'profile') and liker.profile.profile_picture:
-                profile_picture = request.build_absolute_uri(liker.profile.profile_picture.url)
-            likers_data.append({
-                'id': liker.id,
-                'username': liker.username,
-                'profile_picture': profile_picture
-            })
-        return Response(likers_data)
-    except Artwork.DoesNotExist:
-        return Response({'error': 'Artwork not found'}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": f"Failed to like artwork: {str(e)}"}, status=400)

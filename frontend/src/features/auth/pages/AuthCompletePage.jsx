@@ -1,28 +1,35 @@
 // src/pages/AuthCompletePage.jsx
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../../contexts/AuthContext";
 
 const AuthCompletePage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { setUser, setIsAuthenticated } = useAuth();
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const userStr = params.get("user");
+    const handleAuthComplete = async () => {
+      const params = new URLSearchParams(location.search);
+      const userStr = params.get("user");
 
-    if (userStr) {
-      try {
-        // With session auth, the user is already authenticated via cookies
-        // We just need to parse the user data if available
-        navigate("/gallery");
-      } catch (error) {
-        console.error("Error parsing user data:", error);
+      if (userStr) {
+        try {
+          const userData = JSON.parse(userStr);
+          setUser(userData);
+          setIsAuthenticated(true);
+          navigate("/gallery");
+        } catch (error) {
+          console.error("Error handling OAuth complete:", error);
+          navigate("/auth");
+        }
+      } else {
         navigate("/auth");
       }
-    } else {
-      navigate("/auth");
-    }
-  }, [location, navigate]);
+    };
+
+    handleAuthComplete();
+  }, [location, navigate, setUser, setIsAuthenticated]);
 
   return <p>Logging you in...</p>;
 };
