@@ -1,0 +1,80 @@
+.artwork-detail-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.artwork-detail-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.artwork-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.artwork-info {
+  margin-left: 16px;
+}
+
+.artwork-image-container {
+  margin-bottom: 24px;
+}
+
+.artwork-image {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.artwork-actions {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.artwork-details {
+  margin-bottom: 24px;
+}
+
+.artwork-details .ant-typography {
+  margin-right: 8px;
+}
+
+.ant-tabs-nav {
+  margin-bottom: 24px;
+}
+
+.ant-list-item {
+  padding: 12px 0;
+}
+
+.ant-list-item-meta-avatar {
+  margin-right: 16px;
+}
+
+.ant-list-item-meta-title {
+  margin-bottom: 0;
+}
+
+.artwork-tabs {
+    margin-top: 24px;
+}
+
+.artwork-tabs .ant-tabs-nav {
+    margin-bottom: 24px;
+}
+
+.artwork-tabs .ant-tabs-tab {
+    padding: 12px 24px;
+}
+
+.artwork-tabs .ant-tabs-tab .anticon {
+    margin-right: 8px;
+}
+
+.artwork-tabs .ant-tabs-content {
+    padding: 0 16px;
+} 
