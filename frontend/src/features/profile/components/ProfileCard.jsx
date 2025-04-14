@@ -27,7 +27,7 @@ const ProfileCard = ({ profile, isOwner }) => {
                 icon={<EditOutlined />}
                 onClick={() => {
                   // Handle edit profile
-                  window.location.href = "/profile/edit";
+                  window.location.href = `/profile/${profile.user.username}/edit`;
                 }}
               >
                 Edit Profile

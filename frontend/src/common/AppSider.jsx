@@ -14,7 +14,6 @@ const AppSider = ({ setMapCenter }) => {
     const fetchArtworks = async () => {
       const response = await api.get('/artwork');
       setArtworks(response.data);
-      console.log(response.data);
     };
     fetchArtworks();
   }, []);
