@@ -34,6 +34,7 @@ const ArtworkDetailPage = () => {
                 message.error('Failed to load artwork');
             }
         };
+
         fetchArtwork();
     }, [artworkId]);
 
@@ -45,25 +46,12 @@ const ArtworkDetailPage = () => {
             console.error('Error fetching likers:', error);
         }
     };
-
-    fetchArtwork();
-   }, [artworkId]);
-
-   const navigate = useNavigate();
-   // todo: add artwork on map feature
-   const handleMapClick = () => {
-    navigate(`/map`);
-   }
-  
+    
 
     const handleTabChange = (key) => {
         if (key === 'likes') {
             fetchLikers();
         }
-    };
-
-    const handleMapClick = () => {
-        navigate(`/map`);
     };
 
     const handleDelete = () => {
@@ -148,7 +136,7 @@ const ArtworkDetailPage = () => {
                         <Col>
                             <Space
                                 style={{ cursor: 'pointer' }}
-                                onClick={handleMapClick}
+                                onClick={() => navigate(`/map`)}
                             >
                                 <Tooltip title="View on map">
                                     <EnvironmentOutlined />

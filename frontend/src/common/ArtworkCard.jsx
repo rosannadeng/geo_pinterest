@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Avatar, Typography, Tooltip, Image, message } from 'antd';
+import { Card, Avatar, Typography, Tooltip, Image, message, Space, Button } from 'antd';
 import { UserOutlined, EnvironmentOutlined, HeartOutlined, HeartFilled, EyeOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import './ArtworkCard.css';
 import LikeButton from './LikeButton';
 
-const { Meta } = Card;
 const { Text, Title } = Typography;
-
 
 const ArtworkCard = ({ artwork, setMapCenter }) => {
   const navigate = useNavigate();
-useEffect(() => {
+  const { user } = useAuth();
+  const [liked, setLiked] = useState(artwork.is_liked);
+  const [likesCount, setLikesCount] = useState(artwork.total_likes);
+
+  useEffect(() => {
     const checkIfLiked = async () => {
       if (user && user.user) { 
         try {
@@ -31,10 +33,7 @@ useEffect(() => {
     }
   }, [user, artwork.id]);
 
-
-
   const handleView = (artworkId) => {
-    console.log('Viewing artwork:', artworkId);
     if (setMapCenter) {
       setMapCenter({
         lat: artwork.latitude,
