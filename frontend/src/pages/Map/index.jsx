@@ -41,21 +41,12 @@ const xyzToLatLng = ({ x, y, z }) => {
 };
 
 const averageLatLng = (points) => {
-    const sum = points.reduce((acc, point) => {
-        const { x, y, z } = latLngToXYZ(point.lat, point.lng);
-        acc.x += x;
-        acc.y += y;
-        acc.z += z;
-        return acc;
-    }
-        , { x: 0, y: 0, z: 0 });
-    const count = points.length;
-    const avg = {
-        x: sum.x / count,
-        y: sum.y / count,
-        z: sum.z / count,
-    };
-    return xyzToLatLng(avg);
+    const xyzPoints = points.map(({ lat, lng }) => latLngToXYZ(lat, lng));
+    const avgX = xyzPoints.reduce((sum, { x }) => sum + x, 0) / points.length;
+    const avgY = xyzPoints.reduce((sum, { y }) => sum + y, 0) / points.length;
+    const avgZ = xyzPoints.reduce((sum, { z }) => sum + z, 0) / points.length;
+
+    return xyzToLatLng({ x: avgX, y: avgY, z: avgZ });
 }
 
 const ArtworkMap = ({ center, setCenter }) => {
@@ -77,11 +68,8 @@ const ArtworkMap = ({ center, setCenter }) => {
                         lat: a.latitude,
                         lng: a.longitude,
                     }));
-                    const { latAvg, lngAvg } = averageLatLng(latLngPoints);
-                    setCenter({
-                        lat: latAvg,
-                        lng: lngAvg,
-                    });
+                    const avgCenter = averageLatLng(latLngPoints);
+                    setCenter(avgCenter);
                 }
             } catch (error) {
                 console.error('Error fetching artworks:', error);
@@ -91,7 +79,7 @@ const ArtworkMap = ({ center, setCenter }) => {
         };
 
         fetchArtworks();
-    }, [setCenter]);
+    }, []);
 
     const handleMarkerClick = (artworkId) => {
         setOpenInfoWindows(prev => ({ ...prev, [artworkId]: true }));
