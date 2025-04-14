@@ -1,0 +1,105 @@
+.profile-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.profile-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+
+.profile-info {
+  margin-left: 24px;
+}
+
+.profile-info h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #262626;
+}
+
+.profile-info p {
+  margin: 8px 0 0;
+  color: #8c8c8c;
+}
+
+.profile-tabs {
+  margin-top: 24px;
+}
+
+.profile-tabs .ant-tabs-nav {
+  margin-bottom: 24px;
+}
+
+.liked-artworks-container {
+  padding: 16px;
+}
+
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 16px;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+    padding: 16px;
+  }
+
+  .profile-info {
+    margin: 16px 0 0;
+  }
+} 
+
+
+.upload-button {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  border-radius: 50%;
+  background-color: #1890ff;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  min-width: 70px;
+  min-height: 70px;
+}
+
+.upload-button:hover {
+  background-color: #40a9ff;
+  transform: scale(1.1);
+}
+
+.upload-button:hover .anticon {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease-in-out;
+}
+
+.upload-button .anticon {
+  transition: transform 0.3s ease-in-out;
+}
+
+.gallery-footer {
+  position: sticky;
+  bottom: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
