@@ -1,11 +1,12 @@
 import axios from 'axios';
 import { message } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 const API_URL = 'http://localhost:8000';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || API_URL,
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -15,10 +16,7 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
-    const csrfToken = document.cookie.split('; ')
-      .find(row => row.startsWith('csrftoken='))
-      ?.split('=')[1];
-    
+    const csrfToken = Cookies.get('csrftoken');
     if (csrfToken) {
       config.headers['X-CSRFToken'] = csrfToken;
     }
@@ -34,7 +32,7 @@ api.interceptors.response.use(
   (response) => response,
   error => {
     if (error.response) {
-      if (error.response.status === 401) {
+      if (error.response.status === 403) {
         message.warning('Please login first');
         window.location.href = '/auth';
         return Promise.reject(error);
@@ -68,7 +66,6 @@ export const artwork = {
   // add artwork like/unlike
   checkIfLiked: (id) => api.get(`/artwork/${id}/check_if_liked/`),
   like: (id) => api.post(`/artwork/${id}/like/`),
-  getLikers: (id) => api.get(`/artwork/${id}/likers/`),
 
   // add comment related APIs
   getComments: (id) => api.get(`/artwork/${id}/comments`),
