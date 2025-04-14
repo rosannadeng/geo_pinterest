@@ -127,19 +127,12 @@ const AuthPage = () => {
           <GoogleLoginButton />
         </Tabs.TabPane>
         <Tabs.TabPane tab="Register" key="register">
-          {Object.keys(registerErrors).length > 0 && (
-            <div style={{ marginBottom: 16 }}>
-              {Object.entries(registerErrors).map(([field, error]) => (
-                <div key={field} style={{ color: 'red', marginBottom: 8 }}>
-                  {field === 'general' ? error : `${field}: ${typeof error === 'object' ? JSON.stringify(error) : error}`}
-                </div>
-              ))}
-            </div>
-          )}
           <Form onFinish={onRegister}>
             <Form.Item
               name="username"
               rules={[{ required: true, message: "Please enter your username" }]}
+              validateStatus={registerErrors.username ? "error" : ""}
+              help={registerErrors.username}
             >
               <Input prefix={<UserOutlined />} placeholder="Username" />
             </Form.Item>
@@ -149,12 +142,16 @@ const AuthPage = () => {
                 { required: true, message: "Please enter your email" },
                 { type: "email", message: "Please enter a valid email address" },
               ]}
+              validateStatus={registerErrors.email ? "error" : ""}
+              help={registerErrors.email}
             >
               <Input prefix={<MailOutlined />} placeholder="Email" />
             </Form.Item>
             <Form.Item
               name="password"
               rules={[{ required: true, message: "Please enter your password" }]}
+              validateStatus={registerErrors.password ? "error" : ""}
+              help={registerErrors.password}
             >
               <Input.Password prefix={<LockOutlined />} placeholder="Password" />
             </Form.Item>
@@ -171,18 +168,24 @@ const AuthPage = () => {
                   },
                 }),
               ]}
+              validateStatus={registerErrors.confirm_password ? "error" : ""}
+              help={registerErrors.confirm_password}
             >
               <Input.Password prefix={<LockOutlined />} placeholder="Confirm Password" />
             </Form.Item>
             <Form.Item
               name="firstname"
               rules={[{ required: true, message: "Please enter your first name" }]}
+              validateStatus={registerErrors.firstname ? "error" : ""}
+              help={registerErrors.firstname}
             >
               <Input prefix={<UserOutlined />} placeholder="First Name" />
             </Form.Item>
             <Form.Item
               name="lastname"
               rules={[{ required: true, message: "Please enter your last name" }]}
+              validateStatus={registerErrors.lastname ? "error" : ""}
+              help={registerErrors.lastname}
             >
               <Input prefix={<UserOutlined />} placeholder="Last Name" />
             </Form.Item>

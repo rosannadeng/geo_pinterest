@@ -47,8 +47,10 @@ const auth = {
       });
       return response;
     } catch (error) {
-      console.error('Registration error:', error);
-      throw error;
+      if (error.response) {
+        throw error;
+      }
+      throw new Error('Registration failed, please try again later');
     }
   },
 
@@ -61,6 +63,7 @@ const auth = {
           "X-CSRFToken": csrfToken,
         }
       });
+      Cookies.remove("csrftoken");
     } catch (error) {
       console.error('Logout error:', error);
       throw error;
