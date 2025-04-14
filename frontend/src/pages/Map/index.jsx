@@ -60,7 +60,7 @@ const averageLatLng = (points) => {
 
 const ArtworkMap = ({ center, setCenter }) => {
     const [artworks, setArtworks] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false); // TODO: inspect why this is not working
     const [openInfoWindows, setOpenInfoWindows] = useState({});
 
     const { isLoaded } = useGoogleMaps();
