@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Layout, Spin } from 'antd';
-import { GoogleMap, Marker, InfoWindow, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, Marker, InfoWindow } from '@react-google-maps/api';
 import api from '../../services/api';
 import ArtworkCard from '../../common/ArtworkCard';
 import AppSider from '../../common/AppSider';
+import { useGoogleMaps } from '../../contexts/GoogleMapsContext';
 
 const { Content } = Layout;
 
@@ -18,15 +19,42 @@ const defaultCenter = {
     lng: -98.5795,
 };
 
-const ArtworkMap = () => {
+const toRadians = (deg) => deg * (Math.PI / 180);
+
+const toDegrees = (rad) => rad * (180 / Math.PI);
+
+const latLngToXYZ = (lat, lng) => {
+    const latRad = toRadians(lat);
+    const lngRad = toRadians(lng);
+    return {
+        x: Math.cos(latRad) * Math.cos(lngRad),
+        y: Math.cos(latRad) * Math.sin(lngRad),
+        z: Math.sin(latRad),
+    };
+};
+
+const xyzToLatLng = ({ x, y, z }) => {
+    const hyp = Math.sqrt(x * x + y * y);
+    const lat = toDegrees(Math.atan2(z, hyp));
+    const lng = toDegrees(Math.atan2(y, x));
+    return { lat, lng };
+};
+
+const averageLatLng = (points) => {
+    const xyzPoints = points.map(({ lat, lng }) => latLngToXYZ(lat, lng));
+    const avgX = xyzPoints.reduce((sum, { x }) => sum + x, 0) / points.length;
+    const avgY = xyzPoints.reduce((sum, { y }) => sum + y, 0) / points.length;
+    const avgZ = xyzPoints.reduce((sum, { z }) => sum + z, 0) / points.length;
+
+    return xyzToLatLng({ x: avgX, y: avgY, z: avgZ });
+}
+
+const ArtworkMap = ({ center, setCenter }) => {
     const [artworks, setArtworks] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [center, setCenter] = useState(defaultCenter);
+    const [loading, setLoading] = useState(false); // TODO: inspect why this is not working
     const [openInfoWindows, setOpenInfoWindows] = useState({});
 
-    const { isLoaded } = useJsApiLoader({
-        googleMapsApiKey: 'AIzaSyBdMx5mw7syNkmrDG_2lTfkLyZP_Dqdvr4',
-    });
+    const { isLoaded } = useGoogleMaps();
 
     useEffect(() => {
         const fetchArtworks = async () => {
@@ -36,14 +64,12 @@ const ArtworkMap = () => {
                 setArtworks(validArtworks);
                 // compute average center
                 if (validArtworks.length > 0) {
-                    const latSum = validArtworks.reduce((sum, artwork) => sum + artwork.latitude, 0);
-                    const lngSum = validArtworks.reduce((sum, artwork) => sum + artwork.longitude, 0);
-                    const latAvg = latSum / validArtworks.length;
-                    const lngAvg = lngSum / validArtworks.length;
-                    setCenter({
-                        lat: latAvg,
-                        lng: lngAvg,
-                    });
+                    const latLngPoints = validArtworks.map(a => ({
+                        lat: a.latitude,
+                        lng: a.longitude,
+                    }));
+                    const avgCenter = averageLatLng(latLngPoints);
+                    setCenter(avgCenter);
                 }
             } catch (error) {
                 console.error('Error fetching artworks:', error);
@@ -103,11 +129,13 @@ const ArtworkMap = () => {
 };
 
 const MapPage = () => {
+    const [center, setCenter] = useState(defaultCenter);
+
     return (
         <Layout>
-            <AppSider />
+            <AppSider setMapCenter={setCenter} />
             <Content>
-                <ArtworkMap />
+                <ArtworkMap center={center} setCenter={setCenter} />
             </Content>
         </Layout>
     );
