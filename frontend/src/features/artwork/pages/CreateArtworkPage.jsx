@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Form, Input, DatePicker, Select, Button, message } from 'antd';
 
@@ -29,6 +28,9 @@ const CreateArtworkPage = () => {
   const navigate = useNavigate();
   const [imageInfo, setImageInfo] = useState(null);
   const [markerPosition, setMarkerPosition] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [locationOptions, setLocationOptions] = useState([]);
+  const searchTimeout = useRef(null);
 
   const [mapInstance, setMapInstance] = useState(null);
   const searchInputRef = useRef(null);
@@ -110,15 +112,28 @@ const CreateArtworkPage = () => {
   };
 
   const handleLocationSearch = (value) => {
-    if (searchTimeout) {
-      clearTimeout(searchTimeout);
+    if (searchTimeout.current) {
+      clearTimeout(searchTimeout.current);
     }
-    
-    const timeout = setTimeout(() => {
-      searchLocation(value);
-    }, 500);
-    
-    setSearchTimeout(timeout);
+
+    if (!value) {
+      setLocationOptions([]);
+      return;
+    }
+
+    searchTimeout.current = setTimeout(async () => {
+      try {
+        const response = await api.get(`/location/search?q=${value}`);
+        setLocationOptions(response.data.map(location => ({
+          value: location.id,
+          label: location.name,
+          ...location
+        })));
+      } catch (error) {
+        console.error('Error searching locations:', error);
+        setLocationOptions([]);
+      }
+    }, 300);
   };
 
   const handleLocationSelect = (value, option) => {
