@@ -13,6 +13,25 @@ const { Text, Title } = Typography;
 
 const ArtworkCard = ({ artwork, setMapCenter }) => {
   const navigate = useNavigate();
+useEffect(() => {
+    const checkIfLiked = async () => {
+      if (user && user.user) { 
+        try {
+          const response = await api.get(`/artwork/${artwork.id}/check_if_liked/`);
+          setLiked(response.data.liked);
+          setLikesCount(response.data.likes_count);
+        } catch (error) {
+          console.error('Error checking if artwork is liked:', error);
+        }
+      }
+    };
+
+    if (artwork.id) {
+      checkIfLiked();
+    }
+  }, [user, artwork.id]);
+
+
 
   const handleView = (artworkId) => {
     console.log('Viewing artwork:', artworkId);
