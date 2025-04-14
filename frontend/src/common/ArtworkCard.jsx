@@ -38,13 +38,11 @@ const ArtworkCard = ({ artwork, onLike }) => {
   }, [user, artwork.id]);
 
   useEffect(() => {
-    console.log('Artwork object:', artwork);
   }, [artwork]);
 
 
   const handleView = (artworkId) => {
     // TODO: Implement artwork details view
-    console.log('Viewing artwork:', artworkId);
     navigate(`/artwork/${artworkId}`);
     // navigate(`/artwork/${artwork.id}`);
 

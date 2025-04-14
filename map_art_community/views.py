@@ -1,18 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import DetailView, CreateView, UpdateView, ListView
-from django.contrib import messages
 from django.http import Http404, HttpResponse, JsonResponse
-from django.urls import reverse_lazy
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-
-from .models import Profile, Artwork
+from .models import Profile, Artwork, Comment
 import mimetypes
 import json
-from .forms import LoginForm, RegisterForm, ProfileForm, ArtworkForm
+from .forms import RegisterForm
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -22,8 +17,6 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework import serializers
 import os
 from django.views.decorators.csrf import csrf_exempt
-import requests
-from django.conf import settings
 from PIL import Image
 from datetime import datetime
 import tempfile
@@ -36,11 +29,57 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    user = UserSerializer(read_only=True)
+    featured_artwork = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
-        fields = ["user", "bio", "profile_picture", "website"]
+        fields = ["user", "bio", "profile_picture", "website", "featured_artwork"]
+
+    def get_featured_artwork(self, obj):
+        if obj.featured_artwork:
+            request = self.context.get('request')
+            if request is not None:
+                return {
+                    'id': obj.featured_artwork.id,
+                    'title': obj.featured_artwork.title,
+                    'image': request.build_absolute_uri(obj.featured_artwork.image.url),
+                    'artist_username': obj.featured_artwork.artist.username,
+                    'artist_profile_picture': request.build_absolute_uri(obj.featured_artwork.artist.profile.profile_picture.url) if obj.featured_artwork.artist.profile.profile_picture else None,
+                    'total_likes': obj.featured_artwork.total_likes(),
+                    'is_liked': obj.featured_artwork.likes.filter(id=request.user.id).exists() if request.user.is_authenticated else False
+                }
+            return {
+                'id': obj.featured_artwork.id,
+                'title': obj.featured_artwork.title,
+                'image': obj.featured_artwork.image.url,
+                'artist_username': obj.featured_artwork.artist.username,
+                'artist_profile_picture': obj.featured_artwork.artist.profile.profile_picture.url if obj.featured_artwork.artist.profile.profile_picture else None,
+                'total_likes': obj.featured_artwork.total_likes(),
+                'is_liked': False
+            }
+        return None
+
+class CommentSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    username = serializers.SerializerMethodField()
+    user_profile_picture = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'comment', 'created_at', 'user', 'username', 'user_profile_picture']
+        read_only_fields = ['created_at', 'user']
+
+    def get_username(self, obj):
+        return obj.user.username
+
+    def get_user_profile_picture(self, obj):
+        if hasattr(obj.user, 'profile') and obj.user.profile.profile_picture:
+            request = self.context.get('request')
+            if request is not None:
+                return request.build_absolute_uri(obj.user.profile.profile_picture.url)
+            return obj.user.profile.profile_picture.url
+        return None
 
 
 class ArtworkSerializer(serializers.ModelSerializer):
@@ -49,6 +88,9 @@ class ArtworkSerializer(serializers.ModelSerializer):
     total_likes = serializers.SerializerMethodField()
     artist_username = serializers.SerializerMethodField()
     artist_profile_picture = serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
+    comments = CommentSerializer(many=True, read_only=True)
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Artwork
@@ -70,8 +112,18 @@ class ArtworkSerializer(serializers.ModelSerializer):
             "likes",
             "views",
             "total_likes",
+            "is_liked",
+            "comments",
         ]
         extra_kwargs = {"image": {"required": False}}
+
+    def get_image(self, obj):
+        if obj.image:
+            request = self.context.get('request')
+            if request is not None:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
 
     def create(self, validated_data):
         image_url = validated_data.pop("image_url", None)
@@ -80,15 +132,26 @@ class ArtworkSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
     def get_total_likes(self, obj):
-        return obj.total_likes()
+        return obj.likes.count()
 
     def get_artist_username(self, obj):
         return obj.artist.username if obj.artist else None
 
     def get_artist_profile_picture(self, obj):
         if obj.artist and hasattr(obj.artist, "profile") and obj.artist.profile.profile_picture:
+            request = self.context.get('request')
+            if request is not None:
+                return request.build_absolute_uri(obj.artist.profile.profile_picture.url)
             return obj.artist.profile.profile_picture.url
         return None
+
+    def get_is_liked(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.likes.filter(id=request.user.id).exists()
+        return False
+
+
 
 
 @api_view(["POST"])
@@ -339,6 +402,27 @@ class ArtworkViewSet(ModelViewSet):
         artwork.image.save(filename, image)
         artwork.save()
 
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            
+            profiles = Profile.objects.filter(featured_artwork=instance)
+            
+            profiles.update(featured_artwork=None)
+            
+            instance.delete()
+            
+            return Response(
+                {
+                    "message": "Artwork deleted successfully",
+                    "cleared_featured": profiles.count()
+                }, 
+                status=status.HTTP_204_NO_CONTENT
+            )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+
     def update(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -476,24 +560,29 @@ def check_artwork_like(request, artwork_id):
         return Response({"error": "Artwork not found"}, status=404)
 
 
-## TODO:
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def like_artwork(request, artwork_id):
-
     try:
         if not request.user.is_authenticated:
             return Response({"error": "User not authenticated"}, status=401)
 
         artwork = Artwork.objects.get(id=artwork_id)
         user = request.user
+        profile = user.profile
 
         if user in artwork.likes.all():
             artwork.likes.remove(user)
             action = "unliked"
+            if profile.featured_artwork == artwork:
+                profile.featured_artwork = None
+                profile.save()
         else:
             artwork.likes.add(user)
             action = "liked"
+            if not profile.featured_artwork:
+                profile.featured_artwork = artwork
+                profile.save()
 
         artwork.save()
         print(f"User {user.username} {action} artwork {artwork.id}")
@@ -506,5 +595,70 @@ def like_artwork(request, artwork_id):
             }
         )
     except Artwork.DoesNotExist:
-        # If artwork doesn't exist, return error
         return Response({"error": "Artwork not found"}, status=404)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_comment(request, artwork_id):
+    try:
+        artwork = Artwork.objects.get(id=artwork_id)
+        comment = Comment.objects.create(
+            artwork=artwork,
+            user=request.user,
+            comment=request.data.get('comment')
+        )
+        serializer = CommentSerializer(comment, context={'request': request})
+        return Response({'comment': serializer.data}, status=status.HTTP_201_CREATED)
+    except Artwork.DoesNotExist:
+        return Response({'error': 'Artwork not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def get_comments(request, artwork_id):
+    try:
+        artwork = Artwork.objects.get(id=artwork_id)
+        comments = artwork.comments.all().order_by('-created_at')
+        serializer = CommentSerializer(comments, many=True, context={'request': request})
+        return Response(serializer.data)
+    except Artwork.DoesNotExist:
+        return Response({'error': 'Artwork not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(["GET"])
+def get_featured_artwork(request, username):
+    try:
+        user = User.objects.get(username=username)
+        profile = user.profile
+        if profile.featured_artwork:
+            serializer = ArtworkSerializer(profile.featured_artwork, context={'request': request})
+            return Response(serializer.data)
+        return Response({"message": "No featured artwork"}, status=200)
+    except User.DoesNotExist:
+        return Response({"error": "User not found"}, status=404)
+    except Profile.DoesNotExist:
+        return Response({"error": "Profile not found"}, status=404)
+
+@api_view(['GET'])
+def get_artwork_likers(request, artwork_id):
+    try:
+        artwork = Artwork.objects.get(id=artwork_id)
+        likers = artwork.likes.all()
+        likers_data = []
+        for liker in likers:
+            profile_picture = None
+            if hasattr(liker, 'profile') and liker.profile.profile_picture:
+                profile_picture = request.build_absolute_uri(liker.profile.profile_picture.url)
+            likers_data.append({
+                'id': liker.id,
+                'username': liker.username,
+                'profile_picture': profile_picture
+            })
+        return Response(likers_data)
+    except Artwork.DoesNotExist:
+        return Response({'error': 'Artwork not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
