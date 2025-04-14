@@ -33,7 +33,6 @@ const LikeButton = ({ artworkId, initialLikes = 0, showCount = true, onLikeChang
             if (user && user.user) {
                 try {
                     const response = await api.get(`/artwork/${artworkId}/check_if_liked/`);
-                    console.log('response.data.liked', response.data.liked);
                     setLiked(response.data.liked);
                     setLikesCount(response.data.likes_count);
                 } catch (error) {
@@ -70,7 +69,6 @@ const LikeButton = ({ artworkId, initialLikes = 0, showCount = true, onLikeChang
                 withCredentials: true,
             });
             
-            console.log('Like response:', response.data);
             setLikesCount(response.data.likes_count);
             
             if (onLikeChange) {
