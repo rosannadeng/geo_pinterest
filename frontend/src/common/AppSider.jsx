@@ -6,19 +6,7 @@ import api from '../services/api';
 import { useEffect, useState } from 'react';
 const { Sider } = Layout;
 
-const AppSider = ({ setMapCenter }) => {
-
-  const [artworks, setArtworks] = useState([]);
-
-  useEffect(() => {
-    const fetchArtworks = async () => {
-      const response = await api.get('/artwork');
-      setArtworks(response.data);
-      console.log(response.data);
-    };
-    fetchArtworks();
-  }, []);
-
+const AppSider = ({ artworks, setMapCenter }) => {
   return (
     <Sider
       width={420}
@@ -33,7 +21,6 @@ const AppSider = ({ setMapCenter }) => {
           <ArtworkCard key={artwork.id} artwork={artwork} setMapCenter={setMapCenter} />
         ))}
       </Flex>
-
     </Sider>
   );
 };

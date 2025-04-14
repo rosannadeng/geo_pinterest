@@ -49,37 +49,10 @@ const averageLatLng = (points) => {
     return xyzToLatLng({ x: avgX, y: avgY, z: avgZ });
 }
 
-const ArtworkMap = ({ center, setCenter }) => {
-    const [artworks, setArtworks] = useState([]);
-    const [loading, setLoading] = useState(false); // TODO: inspect why this is not working
+const ArtworkMap = ({ center, artworks }) => {
     const [openInfoWindows, setOpenInfoWindows] = useState({});
 
     const { isLoaded } = useGoogleMaps();
-
-    useEffect(() => {
-        const fetchArtworks = async () => {
-            try {
-                const response = await api.get('/artwork');
-                const validArtworks = response.data.filter(a => a.latitude && a.longitude);
-                setArtworks(validArtworks);
-                // compute average center
-                if (validArtworks.length > 0) {
-                    const latLngPoints = validArtworks.map(a => ({
-                        lat: a.latitude,
-                        lng: a.longitude,
-                    }));
-                    const avgCenter = averageLatLng(latLngPoints);
-                    setCenter(avgCenter);
-                }
-            } catch (error) {
-                console.error('Error fetching artworks:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchArtworks();
-    }, []);
 
     const handleMarkerClick = (artworkId) => {
         setOpenInfoWindows(prev => ({ ...prev, [artworkId]: true }));
@@ -93,7 +66,7 @@ const ArtworkMap = ({ center, setCenter }) => {
         setOpenInfoWindows({});
     }, []);
 
-    if (loading || !isLoaded) {
+    if (!isLoaded) {
         return <Spin size="large" style={{ display: 'flex', justifyContent: 'center', marginTop: '20%' }} />;
     }
 
@@ -130,12 +103,37 @@ const ArtworkMap = ({ center, setCenter }) => {
 
 const MapPage = () => {
     const [center, setCenter] = useState(defaultCenter);
+    const [artworks, setArtworks] = useState([]);
+
+    useEffect(() => {
+        const fetchArtworks = async () => {
+            try {
+                const response = await api.get('/artwork');
+                const validArtworks = response.data.filter(a => a.latitude && a.longitude);
+                setArtworks(validArtworks);
+                console.log('Valid Artworks:', validArtworks);
+                // compute average center
+                if (validArtworks.length > 0) {
+                    const latLngPoints = validArtworks.map(a => ({
+                        lat: a.latitude,
+                        lng: a.longitude,
+                    }));
+                    const avgCenter = averageLatLng(latLngPoints);
+                    setCenter(avgCenter);
+                }
+            } catch (error) {
+                console.error('Error fetching artworks:', error);
+            }
+        };
+
+        fetchArtworks();
+    }, []);
 
     return (
         <Layout>
-            <AppSider setMapCenter={setCenter} />
+            <AppSider artworks={artworks} setMapCenter={setCenter} />
             <Content>
-                <ArtworkMap center={center} setCenter={setCenter} />
+                <ArtworkMap center={center} artworks={artworks} />
             </Content>
         </Layout>
     );
