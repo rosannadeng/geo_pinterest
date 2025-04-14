@@ -46,6 +46,16 @@ const ArtworkDetailPage = () => {
         }
     };
 
+    fetchArtwork();
+   }, [artworkId]);
+
+   const navigate = useNavigate();
+   // todo: add artwork on map feature
+   const handleMapClick = () => {
+    navigate(`/map`);
+   }
+  
+
     const handleTabChange = (key) => {
         if (key === 'likes') {
             fetchLikers();

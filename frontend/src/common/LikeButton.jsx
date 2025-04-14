@@ -5,6 +5,23 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 
+
+const getCSRFToken = () => {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, 'csrftoken'.length + 1) === ('csrftoken' + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring('csrftoken'.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  };
+
+
 const LikeButton = ({ artworkId, initialLikes = 0, showCount = true, onLikeChange }) => {
     const [liked, setLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(initialLikes);
@@ -16,6 +33,7 @@ const LikeButton = ({ artworkId, initialLikes = 0, showCount = true, onLikeChang
             if (user && user.user) {
                 try {
                     const response = await api.get(`/artwork/${artworkId}/check_if_liked/`);
+                    console.log('response.data.liked', response.data.liked);
                     setLiked(response.data.liked);
                     setLikesCount(response.data.likes_count);
                 } catch (error) {
@@ -45,7 +63,14 @@ const LikeButton = ({ artworkId, initialLikes = 0, showCount = true, onLikeChang
             setLiked(newLikedState);
             setLikesCount(newLikedState ? likesCount + 1 : likesCount - 1);
 
-            const response = await api.post(`/artwork/${artworkId}/like/`);
+            const response = await api.post(`/artwork/${artworkId}/like/`, null, {
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                },
+                withCredentials: true,
+            });
+            
+            console.log('Like response:', response.data);
             setLikesCount(response.data.likes_count);
             
             if (onLikeChange) {
