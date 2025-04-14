@@ -52,7 +52,6 @@ const ArtworkCard = ({ artwork, onLike }) => {
   }, [user, artwork.id]);
 
   useEffect(() => {
-    console.log('Artwork object:', artwork);
   }, [artwork]);
 
   // Function that runs when user clicks the like button

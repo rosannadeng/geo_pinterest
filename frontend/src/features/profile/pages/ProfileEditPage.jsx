@@ -1,36 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Form, Input, Button, Upload, message, Avatar } from 'antd';
 import { UploadOutlined, UserOutlined } from '@ant-design/icons';
-import auth from '../../auth/auth';
 import api from '../../../services/api';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const ProfileEditPage = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const { username } = useParams();
+  const { user: currentUser } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
 
   useEffect(() => {
-    const loadUser = async () => {
+    const loadProfile = async () => {
       try {
-        const userData = await auth.getCurrentUser();
-        setUser(userData);
+        if (!currentUser || currentUser.user.username !== username) {
+          message.error('You do not have permission to edit this profile');
+          navigate(`/profile/${username}`);
+          return;
+        }
+
+        const response = await api.get(`/profile/${username}`);
+        const profileData = response.data;
+        
         form.setFieldsValue({
-          username: userData.user.username,
-          email: userData.user.email,
+          username: profileData.user.username,
+          email: profileData.user.email,
+          bio: profileData.bio || '',
+          website: profileData.website || '',
         });
-        if (userData.profile_picture) {
-          setPreviewImage(userData.profile_picture);
+        
+        if (profileData.profile_picture) {
+          setPreviewImage(profileData.profile_picture);
         }
       } catch (error) {
-        console.error('Error loading user:', error);
-        navigate('/auth');
+        console.error('Error loading profile:', error);
+        message.error('Failed to load profile');
+        navigate(`/profile/${username}`);
       }
     };
-    loadUser();
-  }, [form, navigate]);
+    loadProfile();
+  }, [form, navigate, username, currentUser]);
 
   const onFinish = async (values) => {
     setLoading(true);
@@ -43,14 +55,14 @@ const ProfileEditPage = () => {
         formData.append('profile_picture', values.profile_picture[0].originFileObj);
       }
 
-      await api.put(`/profile/${user.user.username}/edit`, formData, {
+      await api.put(`/profile/${username}/edit`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
       message.success('Profile updated successfully');
-      navigate(`/profile/${user.user.username}`);
+      navigate(`/profile/${username}`);
     } catch (error) {
       console.error('Error updating profile:', error);
       message.error('Failed to update profile');
@@ -101,6 +113,7 @@ const ProfileEditPage = () => {
           website: '',
         }}
       >
+
         <Form.Item
           label="Username"
           name="username"
@@ -154,7 +167,7 @@ const ProfileEditPage = () => {
 
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={loading}>
-            Save Profile
+            Save Changes
           </Button>
         </Form.Item>
       </Form>
