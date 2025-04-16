@@ -226,7 +226,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
-    'http://s25.cmu-webapps.com',
+    'http://team4.cmu-webapps.com',
     'http://localhost:3000',  
 ]
 
