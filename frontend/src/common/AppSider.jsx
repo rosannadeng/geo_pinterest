@@ -1,9 +1,6 @@
 import React from 'react';
 import { Layout, Card, Flex } from 'antd';
-import MasonryGrid from '../features/gallery/components/MasonryGrid';
 import ArtworkCard from './ArtworkCard';
-import api from '../services/api';
-import { useEffect, useState } from 'react';
 const { Sider } = Layout;
 
 const AppSider = ({ artworks, setMapCenter }) => {
