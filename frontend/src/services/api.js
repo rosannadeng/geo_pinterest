@@ -51,31 +51,32 @@ api.interceptors.response.use(
 );
 
 export const auth = {
-  login: (credentials) => api.post('/login', credentials),
-  register: (userData) => api.post('/register', userData),
-  logout: () => api.post('/logout'),
-  getUser: () => api.get('/user'),
+  login: (credentials) => api.post('/api/login', credentials),
+  register: (userData) => api.post('/api/register', userData),
+  logout: () => api.post('/api/logout'),
+  getUser: () => api.get('/api/user'),
+  getGoogleAuthUrl: () => `${API_URL}/api/oauth/login/google-oauth2/`,
 };
 
 export const artwork = {
-  create: (data) => api.post('/artwork/create', data),
-  update: (id, data) => api.put(`/artwork/${id}/update`, data),
-  getAll: () => api.get('/gallery'),
-  getOne: (id) => api.get(`/artwork/${id}`),
+  create: (data) => api.post('/api/artwork/create', data),
+  update: (id, data) => api.put(`/api/artwork/${id}/update`, data),
+  getAll: () => api.get('/api/gallery'),
+  getOne: (id) => api.get(`/api/artwork/${id}`),
   
   // add artwork like/unlike
-  checkIfLiked: (id) => api.get(`/artwork/${id}/check_if_liked/`),
-  like: (id) => api.post(`/artwork/${id}/like/`),
+  checkIfLiked: (id) => api.get(`/api/artwork/${id}/check_if_liked`),
+  like: (id) => api.post(`/api/artwork/${id}/like`),
 
   // add comment related APIs
-  getComments: (id) => api.get(`/artwork/${id}/comments`),
-  addComment: (id, data) => api.post(`/artwork/${id}/comments/add`, data),
+  getComments: (id) => api.get(`/api/artwork/${id}/comments`),
+  addComment: (id, data) => api.post(`/api/artwork/${id}/comments/add`, data),
 };
 
 export const profile = {
-  get: (username) => api.get(`/profile/${username}`),
-  update: (data) => api.post('/profile/setup', data),
-  getPhoto: (username) => api.get(`/profile/${username}/photo`),
+  get: (username) => api.get(`/api/profile/${username}`),
+  update: (data) => api.post('/api/profile/setup', data),
+  getPhoto: (username) => api.get(`/api/profile/${username}/photo`),
 };
 
 export default api; 
