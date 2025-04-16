@@ -2,6 +2,8 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../contexts/AuthContext";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 const AuthCompletePage = () => {
   const location = useLocation();
@@ -9,28 +11,30 @@ const AuthCompletePage = () => {
   const { setUser, setIsAuthenticated } = useAuth();
 
   useEffect(() => {
-    const handleAuthComplete = async () => {
-      const params = new URLSearchParams(location.search);
-      console.log("Location search params:", params);
-      const userStr = params.get("user");
+    const fetchUser = async () => {
+      try {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/user`, {
+          withCredentials: true,
+          headers: {
+            "X-CSRFToken": Cookies.get("csrftoken"),
+          },
+        });
 
-      if (userStr) {
-        console.log("User string:", userStr);
-        try {
-          const userData = JSON.parse(userStr);
-          setUser(userData);
+        if (res.status === 200) {
+          setUser(res.data);
           setIsAuthenticated(true);
           navigate("/gallery");
-        } catch (error) {
-          console.log("Error handling OAuth complete:", error);
+        } else {
+          console.error("User not authenticated, redirecting to /auth");
           navigate("/auth");
         }
-      } else {
+      } catch (err) {
+        console.error("Auth check error:", err);
         navigate("/auth");
       }
     };
 
-    handleAuthComplete();
+    fetchUser();
   }, [location, navigate, setUser, setIsAuthenticated]);
 
   return <p>Logging you in...</p>;
