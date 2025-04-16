@@ -11,6 +11,7 @@ const AuthCompletePage = () => {
   useEffect(() => {
     const handleAuthComplete = async () => {
       const params = new URLSearchParams(location.search);
+      console.log("Location search params:", params);
       const userStr = params.get("user");
 
       if (userStr) {
