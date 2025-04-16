@@ -66,7 +66,7 @@ const ArtworkCard = ({ artwork, setMapCenter }) => {
           </div>
 
           <div className="mask" onClick={() => handleView(artwork.id)}>
-            <div className="mask-center" onClick={(e) => e.stopPropagation()}>
+            <div className="mask-center">
               <EyeOutlined />
               <span style={{ marginLeft: 8 }}>View Details</span>
             </div>
