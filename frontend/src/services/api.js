@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { message } from 'antd';
-import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
@@ -55,6 +54,7 @@ export const auth = {
   register: (userData) => api.post('/register', userData),
   logout: () => api.post('/logout'),
   getUser: () => api.get('/user'),
+  getGoogleAuthUrl: () => `${API_URL}/oauth/login/google-oauth2/`,
 };
 
 export const artwork = {
@@ -64,8 +64,8 @@ export const artwork = {
   getOne: (id) => api.get(`/artwork/${id}`),
   
   // add artwork like/unlike
-  checkIfLiked: (id) => api.get(`/artwork/${id}/check_if_liked/`),
-  like: (id) => api.post(`/artwork/${id}/like/`),
+  checkIfLiked: (id) => api.get(`/artwork/${id}/check_if_liked`),
+  like: (id) => api.post(`/artwork/${id}/like`),
 
   // add comment related APIs
   getComments: (id) => api.get(`/artwork/${id}/comments`),

@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
+    "storages",
 ]
 
 MIDDLEWARE = [
@@ -64,6 +65,28 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "social_django.middleware.SocialAuthExceptionMiddleware",
 ]
+
+# Storage settings for AWS S3
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "access_key": config.get("AWS", "ACCESS_KEY"),
+            "secret_key": config.get("AWS", "SECRET_ACCESS_KEY"),
+            "bucket_name": config.get("AWS", "BUCKET"),
+            "region_name": config.get("AWS", "REGION"),
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "access_key": config.get("AWS", "ACCESS_KEY"),
+            "secret_key": config.get("AWS", "SECRET_ACCESS_KEY"),
+            "bucket_name": config.get("AWS", "BUCKET"),
+            "region_name": config.get("AWS", "REGION"),
+        },
+    },
+}
 
 ROOT_URLCONF = "webapps.urls"
 
@@ -169,7 +192,7 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
 SOCIAL_AUTH_DEBUG = True
 SOCIAL_AUTH_RAISE_EXCEPTIONS = True
 SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ["email", "name", "picture"]
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = "/auth/complete"
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = "/api/auth/complete/"
 
 
 LOGIN_REDIRECT_URL = "gallery"
@@ -194,18 +217,15 @@ SOCIAL_AUTH_ASSOCIATE_BY_EMAIL = True
 SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = False
 SOCIAL_AUTH_CLEAN_USERNAMES = True
 SOCIAL_AUTH_SANITIZE_REDIRECTS = True
-SOCIAL_AUTH_LOGIN_ERROR_URL = '/auth/error'
+SOCIAL_AUTH_LOGIN_ERROR_URL = "/auth/error"
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework.authentication.SessionAuthentication",
-    ),
-    "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.AllowAny",
-    ),
+    "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework.authentication.SessionAuthentication",),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",),
 }
 
 # URL settings
+FRONTEND_URL = "https://team4.cmu-webapps.com"
 APPEND_SLASH = True
 
 # Session settings
@@ -213,21 +233,21 @@ SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_AGE = 1209600  # 2 weeks
 SESSION_COOKIE_SECURE = False  # Set to True in production
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = "Lax"
 
 # CSRF settings
 CSRF_COOKIE_SECURE = False  # Set to True in production
 CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
-    'http://127.0.0.1:3000',
+    'https://team4.cmu-webapps.com',
 ]
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
-    'http://team4.cmu-webapps.com',
-    'http://localhost:3000',  
+    FRONTEND_URL,
+    'http://localhost:3000',
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -240,13 +260,13 @@ CORS_ALLOW_METHODS = [
     "PUT",
 ]
 CORS_ALLOW_HEADERS = [
-    'accept',
-    'accept-encoding',
-    'authorization',
-    'content-type',
-    'dnt',
-    'origin',
-    'user-agent',
-    'x-csrftoken',
-    'x-requested-with',
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
 ]
