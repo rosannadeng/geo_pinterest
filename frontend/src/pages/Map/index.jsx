@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Layout, Spin } from 'antd';
 import { GoogleMap, Marker, InfoWindow } from '@react-google-maps/api';
 import api from '../../services/api';
@@ -104,6 +104,8 @@ const ArtworkMap = ({ center, artworks }) => {
 const MapPage = () => {
     const [center, setCenter] = useState(defaultCenter);
     const [artworks, setArtworks] = useState([]);
+    const inputRef = useRef(null);
+    const { isLoaded } = useGoogleMaps();
 
     useEffect(() => {
         const fetchArtworks = async () => {
@@ -129,6 +131,27 @@ const MapPage = () => {
         fetchArtworks();
     }, []);
 
+    useEffect(() => {
+        if (isLoaded && inputRef.current) {
+            const searchBox = new window.google.maps.places.SearchBox(inputRef.current);
+            searchBox.addListener('places_changed', () => {
+                const places = searchBox.getPlaces();
+                if (places.length === 0) return;
+                const place = places[0];
+                if (!place.geometry?.location) return;
+
+                setCenter({
+                    lat: place.geometry.location.lat(),
+                    lng: place.geometry.location.lng()
+                });
+            });
+
+            return () => {
+                window.google.maps.event.clearInstanceListeners(searchBox);
+            };
+        }
+    }, [isLoaded]);
+
     return (
         <Layout>
             <AppSider 
@@ -137,6 +160,25 @@ const MapPage = () => {
                 center={center}
             />
             <Content>
+                <div style={{
+                    position: 'relative',
+                    zIndex: 1,
+                    margin: '10px auto',
+                    width: '600px'
+                }}>
+                    <input
+                        ref={inputRef}
+                        placeholder="Where to explore?"
+                        style={{
+                            width: '100%',
+                            padding: '10px',
+                            fontSize: '16px',
+                            border: '1px solid #ddd',
+                            borderRadius: '4px',
+                            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)'
+                        }}
+                    />
+                </div>
                 <ArtworkMap center={center} artworks={artworks} />
             </Content>
         </Layout>

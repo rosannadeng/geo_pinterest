@@ -31,7 +31,7 @@ const AppContent = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/auth" element={<AuthPage />} />
-          <Route path="/auth/complete" element={<AuthCompletePage />} />
+          <Route path="/auth/complete/frontend" element={<AuthCompletePage />} />
           
           {/* Protected Routes */}
           <Route path="/gallery" element={

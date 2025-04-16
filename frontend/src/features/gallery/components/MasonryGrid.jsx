@@ -25,6 +25,10 @@ const MasonryGrid = ({ artworks, onArtworkClick, onLike }) => {
   }, []);
 
   useEffect(() => {
+    if (!Array.isArray(artworks)) {
+      console.warn("MasonryGrid received non-array artworks:", artworks);
+      return;
+    }
     const newColumns = Array(columnCount).fill().map(() => []);
     
     artworks.forEach((artwork, index) => {
