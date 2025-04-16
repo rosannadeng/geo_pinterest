@@ -154,7 +154,11 @@ const MapPage = () => {
 
     return (
         <Layout>
-            <AppSider artworks={artworks} setMapCenter={setCenter} />
+            <AppSider 
+                artworks={artworks} 
+                setMapCenter={setCenter} 
+                center={center}
+            />
             <Content>
                 <div style={{
                     position: 'relative',
