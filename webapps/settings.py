@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
+    "storages",
 ]
 
 MIDDLEWARE = [
@@ -61,6 +62,28 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "social_django.middleware.SocialAuthExceptionMiddleware",
 ]
+
+# Storage settings for AWS S3
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "access_key": config.get("AWS", "ACCESS_KEY"),
+            "secret_key": config.get("AWS", "SECRET_ACCESS_KEY"),
+            "bucket_name": config.get("AWS", "BUCKET"),
+            "region_name": config.get("AWS", "REGION"),
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "access_key": config.get("AWS", "ACCESS_KEY"),
+            "secret_key": config.get("AWS", "SECRET_ACCESS_KEY"),
+            "bucket_name": config.get("AWS", "BUCKET"),
+            "region_name": config.get("AWS", "REGION"),
+        },
+    },
+}
 
 ROOT_URLCONF = "webapps.urls"
 
