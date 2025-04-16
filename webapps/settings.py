@@ -206,6 +206,7 @@ REST_FRAMEWORK = {
 }
 
 # URL settings
+FRONTEND_URL = "https://team4.cmu-webapps.com"
 APPEND_SLASH = True
 
 # Session settings
@@ -226,7 +227,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
-    'http://team4.cmu-webapps.com',
+    FRONTEND_URL,
     'http://localhost:3000',  
 ]
 
