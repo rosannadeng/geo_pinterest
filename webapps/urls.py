@@ -39,12 +39,14 @@ urlpatterns = [
     path("api/user", views.UserView.as_view(), name="user"),
     path("api/get_csrf_token", views.get_csrf_token, name="get_csrf_token"),
 
+    path("api/profile", views.ProfileViewSet.as_view({"get": "list"}), name="profile_list"),
     path("api/profile/<str:username>", views.ProfileViewSet.as_view({"get": "retrieve"}), name="profile_detail"),
     path("api/profile/<str:username>/edit", views.ProfileViewSet.as_view({"put": "update"}), name="profile_update"),
     path("api/profile/setup", views.profile_setup, name="profile_setup"),
     path("api/profile/<str:username>/photo", views.get_photo, name="profile_photo"),
     path("api/profile/<str:username>/featured-artworks", views.get_featured_artwork, name="get_featured_artwork"),
 
+    path("api/artwork", views.ArtworkViewSet.as_view({"get": "list"}), name="artwork_list"),
     path("api/artwork/create", views.ArtworkViewSet.as_view({"post": "create"}), name="artwork_create"),
     path("api/artwork/<int:pk>/delete", views.ArtworkViewSet.as_view({"delete": "destroy"}), name="artwork_delete"),
     path("api/artwork/upload-image", views.upload_image, name="upload_image"),
@@ -62,4 +64,3 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    
