@@ -21,6 +21,7 @@ from PIL import Image
 from datetime import datetime
 import tempfile
 from django.conf import settings
+import logging
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -182,6 +183,8 @@ def login_view(request):
 
 @login_required
 def auth_complete(request):
+    logger = logging.getLogger(__name__)
+    logger.debug(f"OAuth request received: {request.GET}")
     try:
         user = request.user
         social = user.social_auth.filter(provider="google-oauth2").first()
