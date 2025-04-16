@@ -7,3 +7,4 @@ social-auth-app-django
 django-cors-headers
 djangorestframework
 djangorestframework-simplejwt>=5.2.2
+django-storages[s3]
