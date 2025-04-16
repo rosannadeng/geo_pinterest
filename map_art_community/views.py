@@ -183,6 +183,7 @@ def login_view(request):
 
 @login_required
 def auth_complete(request):
+    print("Auth complete view called")
     logger = logging.getLogger(__name__)
     logger.debug(f"OAuth request received: {request.GET}")
     try:
