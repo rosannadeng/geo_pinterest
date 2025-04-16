@@ -131,7 +131,11 @@ const MapPage = () => {
 
     return (
         <Layout>
-            <AppSider artworks={artworks} setMapCenter={setCenter} />
+            <AppSider 
+                artworks={artworks} 
+                setMapCenter={setCenter} 
+                center={center}
+            />
             <Content>
                 <ArtworkMap center={center} artworks={artworks} />
             </Content>
