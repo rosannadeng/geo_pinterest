@@ -10,14 +10,10 @@ import os
 class UserAuthenticationTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.test_user = User.objects.create_user(
-            username="testuser", password="testpass123", email="test@example.com"
-        )
+        self.test_user = User.objects.create_user(username="testuser", password="testpass123", email="test@example.com")
 
     def test_login(self):
-        response = self.client.post(
-            reverse("login"), {"username": "testuser", "password": "testpass123"}
-        )
+        response = self.client.post(reverse("login"), {"username": "testuser", "password": "testpass123"})
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse("home"))
 
@@ -61,9 +57,7 @@ class ProfileTests(TestCase):
     def test_profile_update(self):
         """Test updating profile information"""
         self.client.login(username="testuser", password="testpass123")
-        response = self.client.post(
-            reverse("profile_setup"), {"bio": "Test bio", "location": "Test location"}
-        )
+        response = self.client.post(reverse("profile_setup"), {"bio": "Test bio", "location": "Test location"})
         self.assertEqual(response.status_code, 302)
 
         self.profile.refresh_from_db()
@@ -88,9 +82,7 @@ class ProfileTests(TestCase):
 class ArtworkTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user(
-            username="testuser", password="testpass123"
-        )
+        self.user = User.objects.create_user(username="testuser", password="testpass123")
         self.client.login(username="testuser", password="testpass123")
 
         # Create test image using your actual image
@@ -121,9 +113,7 @@ class ArtworkTests(TestCase):
                 "location_name": "Test Location",
             },
         )
-        self.assertEqual(
-            response.status_code, 302
-        )  # Should redirect after successful creation
+        self.assertEqual(response.status_code, 302)  # Should redirect after successful creation
         self.assertTrue(Artwork.objects.filter(title="Test Artwork").exists())
 
     def test_artwork_update(self):
