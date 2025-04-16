@@ -20,6 +20,7 @@ from django.views.decorators.csrf import csrf_exempt
 from PIL import Image
 from datetime import datetime
 import tempfile
+from django.conf import settings
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -217,7 +218,7 @@ def auth_complete(request):
             profile.website = ""
             profile.save()
 
-        frontend_url = "http://localhost:3000"
+        frontend_url = settings.FRONTEND_URL
         user_data = {
             "username": user.username,
             "email": email,
