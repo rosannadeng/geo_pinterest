@@ -226,7 +226,7 @@ def auth_complete(request):
         Profile.objects.get_or_create(user=user)
 
         frontend_url = settings.FRONTEND_URL
-        return redirect(f"{frontend_url}/auth/complete")
+        return redirect(f"{frontend_url}/auth/complete/frontend")
 
 
     except Exception as e:
