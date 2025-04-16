@@ -11,16 +11,18 @@ const AuthCompletePage = () => {
   useEffect(() => {
     const handleAuthComplete = async () => {
       const params = new URLSearchParams(location.search);
+      console.log("Location search params:", params);
       const userStr = params.get("user");
 
       if (userStr) {
+        console.log("User string:", userStr);
         try {
           const userData = JSON.parse(userStr);
           setUser(userData);
           setIsAuthenticated(true);
           navigate("/gallery");
         } catch (error) {
-          console.error("Error handling OAuth complete:", error);
+          console.log("Error handling OAuth complete:", error);
           navigate("/auth");
         }
       } else {
