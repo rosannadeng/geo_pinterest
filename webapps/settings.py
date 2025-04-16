@@ -15,8 +15,11 @@ import os
 import configparser
 from datetime import timedelta
 
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+# BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Read config.ini
 config = configparser.ConfigParser()
@@ -31,7 +34,7 @@ SECRET_KEY = "django-insecure-q+&(ha2sc^9dw4w4z790*6-3mt5$fv2p+i7+^3d!0x0hfa89gt
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "54.224.252.194"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "54.224.252.194","team4.cmu-webapps.com"]
 
 
 # Application definition
@@ -112,7 +115,7 @@ WSGI_APPLICATION = "webapps.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
     }
 }
 
@@ -168,7 +171,7 @@ AUTHENTICATION_BACKENDS = (
 # Social Auth settings
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config.get("google_oauth", "client_id", fallback="")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config.get("google_oauth", "client_secret", fallback="")
-SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = "http://localhost:8000/oauth/complete/google-oauth2"
+SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = "https://team4.cmu-webapps.com/oauth/complete/google-oauth2/"
 
 # Additional Social Auth settings
 SOCIAL_AUTH_URL_NAMESPACE = "social"
@@ -189,7 +192,7 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
 SOCIAL_AUTH_DEBUG = True
 SOCIAL_AUTH_RAISE_EXCEPTIONS = True
 SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ["email", "name", "picture"]
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = "/auth/complete"
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = "/auth/complete/"
 
 
 LOGIN_REDIRECT_URL = "gallery"
@@ -222,6 +225,7 @@ REST_FRAMEWORK = {
 }
 
 # URL settings
+FRONTEND_URL = "https://team4.cmu-webapps.com"
 APPEND_SLASH = True
 
 # Session settings
@@ -236,16 +240,17 @@ CSRF_COOKIE_SECURE = False  # Set to True in production
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    'http://localhost:3000',
+    'https://team4.cmu-webapps.com',
 ]
 
 # CORS settings
-CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    FRONTEND_URL,
+    'http://localhost:3000',
 ]
+
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
     "DELETE",
     "GET",

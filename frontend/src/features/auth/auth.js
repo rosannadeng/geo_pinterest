@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Cookies from "js-cookie"; 
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_URL = process.env.REACT_APP_API_URL;
 const auth = {
   // Function to get CSRF token
   getCSRFToken: async () => {
