@@ -34,7 +34,7 @@ SECRET_KEY = "django-insecure-q+&(ha2sc^9dw4w4z790*6-3mt5$fv2p+i7+^3d!0x0hfa89gt
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "54.224.252.194","team4.cmu-webapps.com"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "54.224.252.194", "team4.cmu-webapps.com"]
 
 
 # Application definition
@@ -112,10 +112,21 @@ WSGI_APPLICATION = "webapps.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# Use this for local development with SQLite
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+#     }
+# }
+
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        "OPTIONS": {"charset": "utf8mb4"},
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "django",
+        "USER": config.get("MySQL", "USER"),
+        "PASSWORD": config.get("MySQL", "PASSWORD"),
     }
 }
 
@@ -240,14 +251,14 @@ CSRF_COOKIE_SECURE = False  # Set to True in production
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:3000',
-    'https://team4.cmu-webapps.com',
+    "http://localhost:3000",
+    "https://team4.cmu-webapps.com",
 ]
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
     FRONTEND_URL,
-    'http://localhost:3000',
+    "http://localhost:3000",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
