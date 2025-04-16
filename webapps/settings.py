@@ -169,7 +169,7 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
 SOCIAL_AUTH_DEBUG = True
 SOCIAL_AUTH_RAISE_EXCEPTIONS = True
 SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ["email", "name", "picture"]
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = "http://team4.cmu-webapps.com/auth/complete"
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = "/auth/complete/"
 
 
 LOGIN_REDIRECT_URL = "gallery"
