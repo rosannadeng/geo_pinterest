@@ -194,9 +194,6 @@ def login_view(request):
 
 @login_required
 def auth_complete(request):
-    print("Auth complete view called")
-    logger = logging.getLogger(__name__)
-    logger.debug(f"OAuth request received: {request.GET}")
     try:
         user = request.user
         social = user.social_auth.filter(provider="google-oauth2").first()
@@ -204,7 +201,6 @@ def auth_complete(request):
             return JsonResponse({"error": "No social auth found"}, status=400)
 
         extra_data = social.extra_data
-
         email = extra_data.get("email")
         if not email:
             return JsonResponse({"error": "No email provided by Google"}, status=400)
@@ -227,23 +223,11 @@ def auth_complete(request):
             user.email = email
             user.save()
 
-        profile, created = Profile.objects.get_or_create(user=user)
-        if created:
-            profile.bio = ""
-            profile.website = ""
-            profile.save()
+        Profile.objects.get_or_create(user=user)
 
         frontend_url = settings.FRONTEND_URL
-        user_data = {
-            "username": user.username,
-            "email": email,
-            "name": extra_data.get("name", ""),
-            "picture": extra_data.get("picture", ""),
-        }
+        return redirect(f"{frontend_url}/auth/complete/frontend")
 
-        redirect_url = f"{frontend_url}/auth/complete?user={json.dumps(user_data)}"
-        print("Redirect URL:", redirect_url)
-        return redirect(redirect_url)
 
     except Exception as e:
         return JsonResponse({"error": "OAuth flow failed", "details": str(e)}, status=500)

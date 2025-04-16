@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (location.pathname === '/auth' || 
-        location.pathname === '/auth/complete' || 
+        location.pathname === '/auth/complete/frontend' || 
         location.pathname.startsWith('/oauth/complete')) {
       setLoading(false);
       return;
