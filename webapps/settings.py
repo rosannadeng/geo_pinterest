@@ -148,7 +148,7 @@ AUTHENTICATION_BACKENDS = (
 # Social Auth settings
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config.get("google_oauth", "client_id", fallback="")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config.get("google_oauth", "client_secret", fallback="")
-SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = "http://localhost:8000/oauth/complete/google-oauth2"
+SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = "https://team4.cmu-webapps.com/oauth/complete/google-oauth2/"
 
 # Additional Social Auth settings
 SOCIAL_AUTH_URL_NAMESPACE = "social"
