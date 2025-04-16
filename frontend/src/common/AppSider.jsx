@@ -9,9 +9,9 @@ import { useEffect, useState, useMemo } from 'react';
 const { Sider } = Layout;
 const { Text } = Typography;
 
-// 计算两点之间的距离（使用 Haversine 公式）
+// calculate distance between two points, using Haversine formula
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371; // 地球半径（公里）
+  const R = 6371; // radius of the earth (km)
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
   const a = 
