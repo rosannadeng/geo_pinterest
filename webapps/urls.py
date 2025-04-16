@@ -52,10 +52,8 @@ urlpatterns = [
     path("artwork/<int:pk>", views.ArtworkViewSet.as_view({"get": "retrieve"}), name="artwork_detail"),
     path("gallery", views.GalleryView.as_view(), name="gallery"),
     path("oauth/", include("social_django.urls", namespace="social")),
-
     path("artwork/<int:artwork_id>/comments/add", views.add_comment, name="add_comment"),
     path("artwork/<int:artwork_id>/comments", views.get_comments, name="get_comments"),
-
     # add artwork like/unlike
     path("artwork/<int:artwork_id>/like/", views.like_artwork, name="like_artwork"),
     path("artwork/<int:artwork_id>/check_if_liked/", views.check_artwork_like, name="check_artwork_like"),
