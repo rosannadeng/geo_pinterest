@@ -29,6 +29,8 @@ router.register(r"artwork", views.ArtworkViewSet, basename="artwork")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/", include("map_art_community.urls")),
+    path("api/oauth/", include("social_django.urls", namespace="social")),
     path("", views.GalleryView.as_view(), name="home"),
     path("register", views.register_view, name="register"),
     path("auth/complete/", views.auth_complete, name="auth_complete"),
@@ -51,7 +53,6 @@ urlpatterns = [
     path("artwork/upload-image", views.upload_image, name="upload_image"),
     path("artwork/<int:pk>", views.ArtworkViewSet.as_view({"get": "retrieve"}), name="artwork_detail"),
     path("gallery", views.GalleryView.as_view(), name="gallery"),
-    path("oauth/", include("social_django.urls", namespace="social")),
 
     path("artwork/<int:artwork_id>/comments/add", views.add_comment, name="add_comment"),
     path("artwork/<int:artwork_id>/comments", views.get_comments, name="get_comments"),
