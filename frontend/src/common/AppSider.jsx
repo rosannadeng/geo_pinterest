@@ -72,7 +72,7 @@ const AppSider = ({ artworks, setMapCenter, center }) => {
       }}>
 
       <div style={{textAlign: 'center', marginBottom: '16px', alignItems: 'center'}}>
-        <Text>Scroll to explore artworks  </Text> 
+        <Text>Scroll to explore more artworks nearby  </Text> 
         <ArrowDownOutlined style={{fontSize: '12px', marginLeft: '8px'}} />
       </div>
 
