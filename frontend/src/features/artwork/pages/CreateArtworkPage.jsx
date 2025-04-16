@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import ImageUploader from '../components/ImageUploader';
 import api from '../../../services/api';
 import dayjs from 'dayjs';
-import { useAuth } from '../../../contexts/AuthContext';
 import { GoogleMap, Marker } from '@react-google-maps/api';
 import { useGoogleMaps } from '../../../contexts/GoogleMapsContext';
 
@@ -28,7 +27,6 @@ const CreateArtworkPage = () => {
   const navigate = useNavigate();
   const [imageInfo, setImageInfo] = useState(null);
   const [markerPosition, setMarkerPosition] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [locationOptions, setLocationOptions] = useState([]);
   const searchTimeout = useRef(null);
 
