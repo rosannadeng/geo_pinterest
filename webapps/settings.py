@@ -114,8 +114,11 @@ WSGI_APPLICATION = "webapps.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        "OPTIONS": {"charset": "utf8mb4"},
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "django",
+        "USER": config.get("MySQL", "USER"),
+        "PASSWORD": config.get("MySQL", "PASSWORD"),
     }
 }
 
