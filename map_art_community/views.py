@@ -379,9 +379,10 @@ class ArtworkViewSet(ModelViewSet):
         try:
             instance = self.get_object()
 
-            profiles = Profile.objects.filter(featured_artwork=instance)
+            profiles = Profile.objects.filter(featured_artworks=instance)
 
-            profiles.update(featured_artwork=None)
+            for profile in profiles:
+                profile.featured_artworks.remove(instance)
 
             instance.delete()
 
