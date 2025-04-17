@@ -91,7 +91,7 @@ const AuthPage = () => {
   return (
     <div style={{ maxWidth: 400, margin: "0 auto", padding: "20px" }}>
       <Title level={2} style={{ textAlign: "center" }}>
-        Welcome to Map Art Community
+        Welcome to Artiverse
       </Title>
       <Tabs defaultActiveKey="login">
         <Tabs.TabPane tab="Login" key="login">
