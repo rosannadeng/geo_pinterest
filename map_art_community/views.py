@@ -378,6 +378,12 @@ class ArtworkViewSet(ModelViewSet):
         try:
             instance = self.get_object()
 
+            # One can only delete their own artwork
+            if instance.artist != request.user:
+                return Response(
+                    {"error": "You do not have permission to delete this artwork."}, status=status.HTTP_403_FORBIDDEN
+                )
+
             profiles = Profile.objects.filter(featured_artworks=instance)
             for profile in profiles:
                 profile.featured_artworks.remove(instance)
@@ -394,6 +400,13 @@ class ArtworkViewSet(ModelViewSet):
     def update(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+
+            # One can only update their own artwork
+            if instance.artist != request.user:
+                return Response(
+                    {"error": "You do not have permission to update this artwork."}, status=status.HTTP_403_FORBIDDEN
+                )
+            
             data = request.data.copy()
 
             update_fields = [
