@@ -50,14 +50,17 @@ class RegisterForm(forms.Form):
 
     def register_user(self):
         if self.is_valid():
-            user = User.objects.create_user(
-                username=self.cleaned_data["username"],
-                password=self.cleaned_data["password"],
-                first_name=self.cleaned_data["firstname"],
-                last_name=self.cleaned_data["lastname"],
-                email=self.cleaned_data["email"],
-            )
-            return user
+            try:
+                user = User.objects.create_user(
+                    username=self.cleaned_data["username"],
+                    password=self.cleaned_data["password"],
+                    first_name=self.cleaned_data["firstname"],
+                    last_name=self.cleaned_data["lastname"],
+                    email=self.cleaned_data["email"],
+                )
+                return user
+            except Exception as e:
+                raise forms.ValidationError(f"Failed to create user: {str(e)}")
         raise forms.ValidationError("Invalid form data")
 
 

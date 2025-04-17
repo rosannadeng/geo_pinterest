@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './common/MainLayout.jsx';
 import ProfilePage from './features/profile/pages/ProfilePage.jsx';
 import AuthPage from './features/auth/pages/AuthPage.jsx';
-import MapPage from './features/map/index.jsx';
+import MapPage from './features/Map/index.jsx';
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
 import { GoogleMapsProvider } from './contexts/GoogleMapsContext.jsx';
 import CreateArtworkPage from './features/artwork/pages/CreateArtworkPage.jsx';
