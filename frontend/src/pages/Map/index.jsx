@@ -5,6 +5,7 @@ import api from '../../services/api';
 import ArtworkCard from '../../common/ArtworkCard';
 import AppSider from '../../common/AppSider';
 import { useGoogleMaps } from '../../contexts/GoogleMapsContext';
+import { useLocation } from 'react-router-dom';
 
 const { Content } = Layout;
 
@@ -48,6 +49,19 @@ const averageLatLng = (points) => {
 
     return xyzToLatLng({ x: avgX, y: avgY, z: avgZ });
 }
+
+// calculate distance between two points, using Haversine formula
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // radius of the earth (km)
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
 
 const ArtworkMap = ({ center, artworks }) => {
     const [openInfoWindows, setOpenInfoWindows] = useState({});
@@ -104,35 +118,74 @@ const ArtworkMap = ({ center, artworks }) => {
 const MapPage = () => {
     const [center, setCenter] = useState(defaultCenter);
     const [artworks, setArtworks] = useState([]);
+    const [sortedArtworks, setSortedArtworks] = useState([]);
+    const location = useLocation();
 
     useEffect(() => {
         const fetchArtworks = async () => {
             try {
                 const response = await api.get('/artwork');
                 const validArtworks = response.data.filter(a => a.latitude && a.longitude);
-                setArtworks(validArtworks);
-                console.log('Valid Artworks:', validArtworks);
-                // compute average center
-                if (validArtworks.length > 0) {
-                    const latLngPoints = validArtworks.map(a => ({
-                        lat: a.latitude,
-                        lng: a.longitude,
-                    }));
-                    const avgCenter = averageLatLng(latLngPoints);
-                    setCenter(avgCenter);
+                    
+                // logic: if navigated from artwork detail page, sort artworks by distance to center artwork
+                if (location.state?.from === 'artwork_detail') {
+                    const centerArtwork = validArtworks.find(
+                        a => a.latitude === location.state.artwork.latitude && 
+                            a.longitude === location.state.artwork.longitude
+                    );
+
+                    const otherArtworks = validArtworks
+                        .filter(a => a.id !== centerArtwork?.id)
+                        .sort((a, b) => {
+                            const distanceA = calculateDistance(
+                                centerArtwork.latitude,
+                                centerArtwork.longitude,
+                                a.latitude,
+                                a.longitude
+                            );
+                            const distanceB = calculateDistance(
+                                centerArtwork.latitude,
+                                centerArtwork.longitude,
+                                b.latitude,
+                                b.longitude
+                            );
+                            return distanceA - distanceB;
+                        });
+
+                    setSortedArtworks([centerArtwork, ...otherArtworks]);
+                    setCenter({
+                        lat: centerArtwork.latitude,
+                        lng: centerArtwork.longitude
+                    });
+                } else {
+                    // logic: if not navigated from artwork detail page, sort artworks by upload date
+                    setSortedArtworks(
+                        [...validArtworks].sort((a, b) => 
+                            new Date(b.upload_date) - new Date(a.upload_date)
+                        )
+                    );
+                    if (validArtworks.length > 0) {
+                        const latLngPoints = validArtworks.map(a => ({
+                            lat: a.latitude,
+                            lng: a.longitude,
+                        }));
+                        setCenter(averageLatLng(latLngPoints));
+                    }
                 }
+                
+                setArtworks(validArtworks);
             } catch (error) {
                 console.error('Error fetching artworks:', error);
             }
         };
 
         fetchArtworks();
-    }, []);
+    }, [location]);
 
     return (
         <Layout>
             <AppSider 
-                artworks={artworks} 
+                artworks={sortedArtworks} 
                 setMapCenter={setCenter} 
                 center={center}
             />
