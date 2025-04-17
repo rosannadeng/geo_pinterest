@@ -39,9 +39,9 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ["user", "bio", "profile_picture", "website", "featured_artworks"]
 
     def get_featured_artworks(self, obj):
-        request = self.context.get('request')
+        request = self.context.get("request")
         featured_artworks = obj.featured_artworks.all()
-        return ArtworkSerializer(featured_artworks, many=True, context={'request': request}).data
+        return ArtworkSerializer(featured_artworks, many=True, context={"request": request}).data
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -196,7 +196,6 @@ def auth_complete(request):
 
         frontend_url = settings.FRONTEND_URL
         return redirect(f"{frontend_url}/auth/complete/frontend")
-
 
     except Exception as e:
         return JsonResponse({"error": "OAuth flow failed", "details": str(e)}, status=500)
@@ -380,7 +379,6 @@ class ArtworkViewSet(ModelViewSet):
             instance = self.get_object()
 
             profiles = Profile.objects.filter(featured_artworks=instance)
-
             for profile in profiles:
                 profile.featured_artworks.remove(instance)
 
@@ -525,15 +523,17 @@ def check_artwork_like(request, artwork_id):
         profile = user.profile
 
         is_liked = user in artwork.likes.all()
-        
+
         if is_liked and artwork not in profile.featured_artworks.all():
             profile.featured_artworks.add(artwork)
             profile.save()
 
-        return Response({
-            "liked": is_liked,
-            "likes_count": artwork.total_likes(),
-        })
+        return Response(
+            {
+                "liked": is_liked,
+                "likes_count": artwork.total_likes(),
+            }
+        )
     except Artwork.DoesNotExist:
         return Response({"error": "Artwork not found"}, status=404)
     except Exception as e:
@@ -616,13 +616,13 @@ def get_artwork_likers(request, artwork_id):
         return Response({"error": f"Failed to get likers: {str(e)}"}, status=400)
 
 
-@api_view(['POST'])
+@api_view(["POST"])
 @login_required
 def like_artwork(request, artwork_id):
     try:
         if not request.user.is_authenticated:
             return Response({"error": "Please login to like artwork"}, status=401)
-            
+
         artwork = Artwork.objects.get(id=artwork_id)
         user = request.user
         profile = user.profile
@@ -637,11 +637,13 @@ def like_artwork(request, artwork_id):
             profile.featured_artworks.add(artwork)
 
         profile.save()
-        return Response({
-            "status": "success",
-            "action": action,
-            "likes_count": artwork.total_likes(),
-        })
+        return Response(
+            {
+                "status": "success",
+                "action": action,
+                "likes_count": artwork.total_likes(),
+            }
+        )
     except Artwork.DoesNotExist:
         return Response({"error": "Artwork not found"}, status=404)
     except Exception as e:
