@@ -1,6 +1,6 @@
 // src/features/profile/pages/ProfilePage.jsx
 import React, { useEffect, useState } from "react";
-import { Row, Col, Card, Button, Spin, Tabs } from "antd";
+import { Row, Col, Card, Button, Spin, Tabs, message } from "antd";
 import { UploadOutlined, HeartOutlined, PlusOutlined } from "@ant-design/icons";
 import { useAuth } from "../../../contexts/AuthContext";
 import ProfileCard from "../components/ProfileCard";
@@ -22,7 +22,9 @@ const ProfilePage = () => {
     const fetchProfile = async () => {
       try {
         const response = await api.get(`/profile/${username}`);
+        console.log(response.data);
         setProfile(response.data);
+        setFeaturedArtworks(response.data.featured_artworks || []);
       } catch (error) {
         console.error('Error fetching profile:', error);
       }
@@ -40,20 +42,8 @@ const ProfilePage = () => {
       }
     };
 
-    const fetchFeaturedArtworks = async () => {
-      try {
-        const response = await api.get(`/profile/${username}/featured-artworks`);
-        console.log(response.data);
-        setFeaturedArtworks(response.data ? [response.data] : []);
-      } catch (error) {
-        console.error('Error fetching featured artworks:', error);
-        setFeaturedArtworks([]);
-      }
-    };
-
     fetchProfile();
     fetchArtworks();
-    fetchFeaturedArtworks();
   }, [username]);
 
   if (loading || !profile) {
