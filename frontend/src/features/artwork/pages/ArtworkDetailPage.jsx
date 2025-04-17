@@ -15,6 +15,15 @@ const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
 const { confirm } = Modal;
 
+const MEDIUM_NAME = {
+    OIL: "Oil Paint",
+    ACR: "Acrylic",
+    WAT: "Watercolor",
+    DIG: "Digital",
+    MIX: "Mixed Media",
+    OTH: "Other"
+};
+
 const ArtworkDetailPage = () => {
     const { id: artworkId } = useParams();
     const { user } = useAuth();
@@ -129,7 +138,7 @@ const ArtworkDetailPage = () => {
 
                     <Space style={{ display: 'flex', marginBottom: 8 }}>
                         <EditOutlined />
-                        <Text type="secondary">{artwork.medium}</Text>
+                        <Text type="secondary">{MEDIUM_NAME[artwork.medium]}</Text>
                     </Space>
 
                     <Row justify="space-between" align="middle">
