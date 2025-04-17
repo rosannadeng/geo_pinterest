@@ -43,6 +43,7 @@ const ProfilePage = () => {
     const fetchFeaturedArtworks = async () => {
       try {
         const response = await api.get(`/profile/${username}/featured-artworks`);
+        console.log(response.data);
         setFeaturedArtworks(response.data ? [response.data] : []);
       } catch (error) {
         console.error('Error fetching featured artworks:', error);
