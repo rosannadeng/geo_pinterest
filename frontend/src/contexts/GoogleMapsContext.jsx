@@ -3,10 +3,11 @@ import { useJsApiLoader } from '@react-google-maps/api';
 
 const GoogleMapsContext = createContext(null);
 
+const api_key = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+
 export const GoogleMapsProvider = ({ children }) => {
     const { isLoaded, loadError } = useJsApiLoader({
-        // read api key from config.ini
-        googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
+        googleMapsApiKey: api_key,
         libraries: ['places', 'maps'],
     });
 
