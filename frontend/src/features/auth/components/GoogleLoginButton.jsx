@@ -11,6 +11,7 @@ const GoogleLoginButton = () => {
   return (
     <GoogleButton
       onClick={handleGoogleLogin}
+      label="Continue with Google"
     />
   );
 };
