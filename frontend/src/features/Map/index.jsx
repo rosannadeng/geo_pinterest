@@ -232,7 +232,7 @@ const MapPage = () => {
                     lng: placeLng
                 });
 
-                sortedArtworks.forEach(artwork => {
+                artworks.forEach(artwork => {
                     const distance = calculateDistance(
                         placeLat,
                         placeLng,
@@ -242,8 +242,8 @@ const MapPage = () => {
                     artwork.distance = distance;
                 }
                 );
-                sortedArtworks.sort((a, b) => a.distance - b.distance);
-                setSortedArtworks([...sortedArtworks]);
+                const sorted = [...artworks].sort((a, b) => a.distance - b.distance);
+                setSortedArtworks(sorted);
             });
 
             return () => {
