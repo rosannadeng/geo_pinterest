@@ -224,10 +224,26 @@ const MapPage = () => {
                 const place = places[0];
                 if (!place.geometry?.location) return;
 
+                const placeLat = place.geometry.location.lat();
+                const placeLng = place.geometry.location.lng();
+
                 handleSetCenter({
-                    lat: place.geometry.location.lat(),
-                    lng: place.geometry.location.lng()
+                    lat: placeLat,
+                    lng: placeLng
                 });
+
+                sortedArtworks.forEach(artwork => {
+                    const distance = calculateDistance(
+                        placeLat,
+                        placeLng,
+                        artwork.latitude,
+                        artwork.longitude
+                    );
+                    artwork.distance = distance;
+                }
+                );
+                sortedArtworks.sort((a, b) => a.distance - b.distance);
+                setSortedArtworks([...sortedArtworks]);
             });
 
             return () => {
