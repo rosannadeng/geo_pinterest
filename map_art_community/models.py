@@ -6,21 +6,6 @@ from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 
-class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    bio = models.TextField(blank=True)
-    profile_picture = models.ImageField(upload_to="profile_pictures/", null=True, blank=True)
-    website = models.URLField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    featured_artwork = models.ForeignKey(
-        "Artwork", null=True, blank=True, on_delete=models.SET_NULL, related_name="featured_in_profiles"
-    )
-
-    def __str__(self):
-        return f"{self.user.username}'s Profile"
-
-
 class Artwork(models.Model):
     MEDIUM_CHOICES = [
         ("OIL", "Oil Paint"),
@@ -49,6 +34,19 @@ class Artwork(models.Model):
 
     def total_likes(self):
         return self.likes.count()
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    bio = models.TextField(blank=True)
+    profile_picture = models.ImageField(upload_to="profile_pictures/", null=True, blank=True)
+    website = models.URLField(max_length=200, blank=True)
+    featured_artworks = models.ManyToManyField(Artwork, related_name="featured_in_profiles", blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
 
 
 class Comment(models.Model):

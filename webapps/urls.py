@@ -44,7 +44,7 @@ urlpatterns = [
     path("api/profile/<str:username>/edit", views.ProfileViewSet.as_view({"put": "update"}), name="profile_update"),
     path("api/profile/setup", views.profile_setup, name="profile_setup"),
     path("api/profile/<str:username>/photo", views.get_photo, name="profile_photo"),
-    path("api/profile/<str:username>/featured-artworks", views.get_featured_artwork, name="get_featured_artwork"),
+    # path("api/profile/<str:username>/featured-artworks", views.get_featured_artwork, name="get_featured_artwork"),
 
     path("api/artwork", views.ArtworkViewSet.as_view({"get": "list"}), name="artwork_list"),
     path("api/artwork/create", views.ArtworkViewSet.as_view({"post": "create"}), name="artwork_create"),
