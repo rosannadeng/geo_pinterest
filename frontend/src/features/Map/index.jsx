@@ -5,6 +5,7 @@ import api from '../../services/api';
 import ArtworkCard from '../../common/ArtworkCard';
 import AppSider from '../../common/AppSider';
 import { useGoogleMaps } from '../../contexts/GoogleMapsContext';
+import { useLocation } from 'react-router-dom';
 
 const { Content } = Layout;
 
@@ -49,9 +50,22 @@ const averageLatLng = (points) => {
     return xyzToLatLng({ x: avgX, y: avgY, z: avgZ });
 }
 
-const ArtworkMap = ({ center, artworks }) => {
-    const [openInfoWindows, setOpenInfoWindows] = useState({});
+// calculate distance between two points, using Haversine formula
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // radius of the earth (km)
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
 
+const ArtworkMap = ({ center, artworks, zoom, onZoomChanged }) => {
+    const [map, setMap] = useState(null);
+    const [openInfoWindows, setOpenInfoWindows] = useState({});
     const { isLoaded } = useGoogleMaps();
 
     const handleMarkerClick = (artworkId) => {
@@ -66,6 +80,18 @@ const ArtworkMap = ({ center, artworks }) => {
         setOpenInfoWindows({});
     }, []);
 
+    // save map instance reference
+    const onLoad = useCallback((map) => {
+        setMap(map);
+    }, []);
+
+    // listen to zoom prop changes
+    useEffect(() => {
+        if (map) {
+            map.setZoom(zoom);
+        }
+    }, [zoom, map]);
+
     if (!isLoaded) {
         return <Spin size="large" style={{ display: 'flex', justifyContent: 'center', marginTop: '20%' }} />;
     }
@@ -75,8 +101,14 @@ const ArtworkMap = ({ center, artworks }) => {
             <GoogleMap
                 mapContainerStyle={containerStyle}
                 center={center}
-                zoom={4}
+                zoom={zoom}
                 onClick={onMapClick}
+                onLoad={onLoad}
+                onZoomChanged={() => {
+                    if (map && onZoomChanged) {
+                        onZoomChanged(map.getZoom());
+                    }
+                }}
             >
                 {artworks.map((artwork) => (
                     <React.Fragment key={artwork.id}>
@@ -104,82 +136,98 @@ const ArtworkMap = ({ center, artworks }) => {
 const MapPage = () => {
     const [center, setCenter] = useState(defaultCenter);
     const [artworks, setArtworks] = useState([]);
-    const inputRef = useRef(null);
-    const { isLoaded } = useGoogleMaps();
+    const [sortedArtworks, setSortedArtworks] = useState([]);
+    const [zoom, setZoom] = useState(4);
+    const [userZoom, setUserZoom] = useState(null);
+    const location = useLocation();
+
+    const handleSetCenter = (newCenter) => {
+        setCenter(newCenter);
+        setZoom(10);
+        setUserZoom(null); // reset user zoom state
+    };
+
+    const handleZoomChanged = (newZoom) => {
+        setUserZoom(newZoom);
+    };
 
     useEffect(() => {
         const fetchArtworks = async () => {
             try {
                 const response = await api.get('/artwork');
                 const validArtworks = response.data.filter(a => a.latitude && a.longitude);
-                setArtworks(validArtworks);
-                console.log('Valid Artworks:', validArtworks);
-                // compute average center
-                if (validArtworks.length > 0) {
-                    const latLngPoints = validArtworks.map(a => ({
-                        lat: a.latitude,
-                        lng: a.longitude,
-                    }));
-                    const avgCenter = averageLatLng(latLngPoints);
-                    setCenter(avgCenter);
+                
+                // if navigated from artwork detail page, sort artworks by distance to center artwork
+                if (location.state?.from === 'artwork_detail') {
+                    const centerArtwork = validArtworks.find(
+                        a => a.latitude === location.state.artwork.latitude && 
+                            a.longitude === location.state.artwork.longitude
+                    );
+
+                    const otherArtworks = validArtworks
+                        .filter(a => a.id !== centerArtwork?.id)
+                        .sort((a, b) => {
+                            const distanceA = calculateDistance(
+                                centerArtwork.latitude,
+                                centerArtwork.longitude,
+                                a.latitude,
+                                a.longitude
+                            );
+                            const distanceB = calculateDistance(
+                                centerArtwork.latitude,
+                                centerArtwork.longitude,
+                                b.latitude,
+                                b.longitude
+                            );
+                            return distanceA - distanceB;
+                        });
+
+                    setSortedArtworks([centerArtwork, ...otherArtworks]);
+                    setCenter({
+                        lat: centerArtwork.latitude,
+                        lng: centerArtwork.longitude
+                    });
+                    setZoom(10);
+                } else {
+                    // if not navigated from artwork detail page, sort artworks by upload date to show the newest artworks first
+                    setSortedArtworks(
+                        [...validArtworks].sort((a, b) => 
+                            new Date(b.upload_date) - new Date(a.upload_date)
+                        )
+                    );
+                    if (validArtworks.length > 0) {
+                        const latLngPoints = validArtworks.map(a => ({
+                            lat: a.latitude,
+                            lng: a.longitude,
+                        }));
+                        setCenter(averageLatLng(latLngPoints));
+                    }
+                    setZoom(4);
                 }
+                
+                setArtworks(validArtworks);
             } catch (error) {
                 console.error('Error fetching artworks:', error);
             }
         };
 
         fetchArtworks();
-    }, []);
-
-    useEffect(() => {
-        if (isLoaded && inputRef.current) {
-            const searchBox = new window.google.maps.places.SearchBox(inputRef.current);
-            searchBox.addListener('places_changed', () => {
-                const places = searchBox.getPlaces();
-                if (places.length === 0) return;
-                const place = places[0];
-                if (!place.geometry?.location) return;
-
-                setCenter({
-                    lat: place.geometry.location.lat(),
-                    lng: place.geometry.location.lng()
-                });
-            });
-
-            return () => {
-                window.google.maps.event.clearInstanceListeners(searchBox);
-            };
-        }
-    }, [isLoaded]);
+    }, [location]);
 
     return (
         <Layout>
             <AppSider 
-                artworks={artworks} 
-                setMapCenter={setCenter} 
+                artworks={sortedArtworks} 
+                setMapCenter={handleSetCenter}
                 center={center}
             />
             <Content>
-                <div style={{
-                    position: 'relative',
-                    zIndex: 1,
-                    margin: '10px auto',
-                    width: '600px'
-                }}>
-                    <input
-                        ref={inputRef}
-                        placeholder="Where to explore?"
-                        style={{
-                            width: '100%',
-                            padding: '10px',
-                            fontSize: '16px',
-                            border: '1px solid #ddd',
-                            borderRadius: '4px',
-                            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)'
-                        }}
-                    />
-                </div>
-                <ArtworkMap center={center} artworks={artworks} />
+                <ArtworkMap 
+                    center={center} 
+                    artworks={artworks} 
+                    zoom={userZoom || zoom}
+                    onZoomChanged={handleZoomChanged}
+                />
             </Content>
         </Layout>
     );

@@ -136,7 +136,12 @@ const ArtworkDetailPage = () => {
                         <Col>
                             <Space
                                 style={{ cursor: 'pointer' }}
-                                onClick={() => navigate(`/map`)}
+                                onClick={() => navigate('/map', {
+                                    state: { 
+                                        from: 'artwork_detail',
+                                        artwork: artwork  // pass artwork data to map page
+                                    }
+                                })}
                             >
                                 <Tooltip title="View on map">
                                     <EnvironmentOutlined />
