@@ -23,62 +23,28 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 };
 
 const AppSider = ({ artworks, setMapCenter, center }) => {
-
-  const sortedArtworks = useMemo(() => {
-
-    const isDefaultCenter = center.lat === 39.8283 && center.lng === -98.5795;
-
-    if (isDefaultCenter) {
-      return [...artworks].sort((a, b) => 
-        new Date(b.upload_date) - new Date(a.upload_date)
-      );
-    } else {
-      const centerArtwork = artworks.find(
-        art => art.latitude === center.lat && art.longitude === center.lng
-      );
-
-      const otherArtworks = artworks
-        .filter(art => art.id !== centerArtwork?.id)
-        .sort((a, b) => {
-          const distanceA = calculateDistance(
-            center.lat, 
-            center.lng, 
-            a.latitude, 
-            a.longitude
-          );
-          const distanceB = calculateDistance(
-            center.lat, 
-            center.lng, 
-            b.latitude, 
-            b.longitude
-          );
-          return distanceA - distanceB;
-        });
-
-      return centerArtwork 
-        ? [centerArtwork, ...otherArtworks]
-        : otherArtworks;
-    }
-  }, [artworks, center]);
-
   return (
     <Sider
       width={420}
       style={{
         backgroundColor: '#fff',
         padding: '16px',
-        height: '95vh',   //could be code responsively
+        height: '95vh',
         overflowY: 'auto'
-      }}>
-
+      }}
+    >
       <div style={{textAlign: 'center', marginBottom: '16px', alignItems: 'center'}}>
         <Text>Scroll to explore more artworks nearby  </Text> 
         <ArrowDownOutlined style={{fontSize: '12px', marginLeft: '8px'}} />
       </div>
 
       <Flex vertical gap={16}>
-        {sortedArtworks.map((artwork) => (
-          <ArtworkCard key={artwork.id} artwork={artwork} setMapCenter={setMapCenter} />
+        {artworks.map((artwork) => (
+          <ArtworkCard 
+            key={artwork.id} 
+            artwork={artwork} 
+            setMapCenter={setMapCenter} 
+          />
         ))}
       </Flex>
     </Sider>
