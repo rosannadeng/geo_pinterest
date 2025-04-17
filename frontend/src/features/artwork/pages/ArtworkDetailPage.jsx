@@ -191,25 +191,27 @@ const ArtworkDetailPage = () => {
                     }
                     key="likes"
                 >
-                    <div className="likers-section" isOwner={isOwner}>
-                        <List
-                            dataSource={likers}
-                            renderItem={liker => (
-                                <List.Item>
-                                    <List.Item.Meta
-                                        avatar={
-                                            <Avatar
-                                                linkto={`/profile/${liker.username}`}
-                                                src={liker.profile_picture}
-                                                icon={!liker.profile_picture && <UserOutlined />}
-                                            />
-                                        }
-                                        title={<Text strong><Link to={`/profile/${liker.username}`}>{liker.username}</Link></Text>}
-                                    />
-                                </List.Item>
-                            )}
-                        />
-                    </div>
+                    {isOwner && (
+                        <div className="likers-section">
+                            <List
+                                dataSource={likers}
+                                renderItem={liker => (
+                                    <List.Item>
+                                        <List.Item.Meta
+                                            avatar={
+                                                <Avatar
+                                                    linkto={`/profile/${liker.username}`}
+                                                    src={liker.profile_picture}
+                                                    icon={!liker.profile_picture && <UserOutlined />}
+                                                />
+                                            }
+                                            title={<Text strong><Link to={`/profile/${liker.username}`}>{liker.username}</Link></Text>}
+                                        />
+                                    </List.Item>
+                                )}
+                            />
+                        </div>
+                    )}
                 </TabPane>
             </Tabs>
 
