@@ -9,7 +9,6 @@ import LikeButton from '../../../common/LikeButton';
 import CommentSection from '../components/CommentSection';
 import './ArtworkDetailPage.css';
 
-const defaultAvatar = 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png';
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -192,7 +191,7 @@ const ArtworkDetailPage = () => {
                     }
                     key="likes"
                 >
-                    <div className="likers-section">
+                    <div className="likers-section" isOwner={isOwner}>
                         <List
                             dataSource={likers}
                             renderItem={liker => (
