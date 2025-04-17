@@ -2,7 +2,6 @@ import React from 'react';
 import { Layout } from 'antd';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './common/MainLayout.jsx';
-import Home from './pages/Home/index.jsx';
 import ProfilePage from './features/profile/pages/ProfilePage.jsx';
 import AuthPage from './features/auth/pages/AuthPage.jsx';
 import MapPage from './features/Map/index.jsx';
@@ -29,7 +28,7 @@ const AppContent = () => {
     <MainLayout>
       <Content>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<AuthPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/auth/complete/frontend" element={<AuthCompletePage />} />
           
