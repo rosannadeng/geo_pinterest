@@ -520,12 +520,23 @@ def upload_image(request):
 def check_artwork_like(request, artwork_id):
     try:
         artwork = Artwork.objects.get(id=artwork_id)
+        user = request.user
+        profile = user.profile
 
-        is_liked = request.user in artwork.likes.all()
+        is_liked = user in artwork.likes.all()
+        
+        if is_liked and artwork not in profile.featured_artworks.all():
+            profile.featured_artworks.add(artwork)
+            profile.save()
 
-        return Response({"liked": is_liked, "likes_count": artwork.total_likes()})
+        return Response({
+            "liked": is_liked,
+            "likes_count": artwork.total_likes(),
+        })
     except Artwork.DoesNotExist:
         return Response({"error": "Artwork not found"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
 
 
 @api_view(["POST"])
