@@ -1,15 +1,14 @@
 import React from 'react';
 import { Layout } from 'antd';
 import AppHeader from './AppHeader';
-import AppSider from './AppSider';
-import { useLocation } from 'react-router-dom'; 
+import { useLocation } from 'react-router-dom';
 
 const { Content } = Layout;
 
 const showSiderRoutes = ['/'];
 
 const MainLayout = ({ children }) => {
-  const location = useLocation(); 
+  const location = useLocation();
 
   return (
     <Layout>

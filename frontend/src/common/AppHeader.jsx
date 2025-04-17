@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, AutoComplete, Button } from 'antd';
+import { Layout, Menu, Button } from 'antd';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { PictureOutlined, UserOutlined, LoginOutlined } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -21,12 +21,12 @@ const AppHeader = () => {
   }, [location]);
 
   const menuItems = [
-    { 
+    {
       key: 'gallery',
       label: <Link to="/gallery">Gallery</Link>,
       icon: <PictureOutlined />
     },
-    { 
+    {
       key: 'map',
       label: <Link to="/map">Map</Link>,
       icon: <PictureOutlined />
@@ -49,9 +49,9 @@ const AppHeader = () => {
   };
 
   return (
-    <Header 
-      style={{ 
-        background: '#fff', 
+    <Header
+      style={{
+        background: '#fff',
         padding: '0 24px',
         display: 'flex',
         alignItems: 'center',
@@ -59,17 +59,17 @@ const AppHeader = () => {
       }}
     >
       {/* left */}
-      <div style={{ 
-        display: 'flex', 
+      <div style={{
+        display: 'flex',
         alignItems: 'center'
       }}>
-        <div style={{ 
+        <div style={{
           marginRight: '24px',
         }}>
           <a onClick={handleLogoClick} style={{ color: 'inherit', cursor: 'pointer' }}>
-            <img 
-              src={artiverseTitle} 
-              alt="Artiverse" 
+            <img
+              src={artiverseTitle}
+              alt="Artiverse"
               style={{
                 height: '40px',
                 width: 'auto',
@@ -82,15 +82,15 @@ const AppHeader = () => {
 
       {/* right */}
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        <Menu 
-          mode="horizontal" 
+        <Menu
+          mode="horizontal"
           items={menuItems}
           selectedKeys={[selectedKey]}
           style={{ border: 'none' }}
         />
         {isAuthenticated ? (
-          <Button 
-            type="text" 
+          <Button
+            type="text"
             icon={<UserOutlined />}
             onClick={handleLogout}
           >
@@ -98,8 +98,8 @@ const AppHeader = () => {
           </Button>
         ) : (
           <div style={{ display: 'flex', gap: '8px' }}>
-            <Button 
-              type="text" 
+            <Button
+              type="text"
               icon={<LoginOutlined />}
               onClick={() => navigate('/auth')}
             >
