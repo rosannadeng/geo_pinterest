@@ -1,10 +1,10 @@
 // #Todo:add detail artwork page link user profile, artwork like
 import React, { useState, useEffect } from 'react';
-import { Layout, Image, Card, Row, Col, Typography, Tooltip, message, Space, Avatar, Button, Modal, Tabs, List } from 'antd';
+import { Image, Card, Row, Col, Typography, Tooltip, message, Space, Avatar, Button, Modal, Tabs, List } from 'antd';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../../../services/api';
 import { useAuth } from '../../../contexts/AuthContext';
-import { HeartFilled, HeartOutlined, EnvironmentOutlined, ClockCircleOutlined, EditOutlined, DeleteOutlined, UserOutlined, CommentOutlined } from '@ant-design/icons';
+import { HeartOutlined, EnvironmentOutlined, ClockCircleOutlined, EditOutlined, DeleteOutlined, UserOutlined, CommentOutlined } from '@ant-design/icons';
 import LikeButton from '../../../common/LikeButton';
 import CommentSection from '../components/CommentSection';
 import './ArtworkDetailPage.css';
@@ -46,7 +46,7 @@ const ArtworkDetailPage = () => {
             console.error('Error fetching likers:', error);
         }
     };
-    
+
 
     const handleTabChange = (key) => {
         if (key === 'likes') {
@@ -80,7 +80,7 @@ const ArtworkDetailPage = () => {
     const isOwner = user?.user?.username === artwork.artist_username;
 
     return (
-        <Card style={{ margin:'40px auto', width:'80%', borderRadius: 16, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+        <Card style={{ margin: '40px auto', width: '80%', borderRadius: 16, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
             <Row gutter={32}>
                 <Col span={14}>
                     <Image
@@ -97,9 +97,9 @@ const ArtworkDetailPage = () => {
                         </Col>
                         {isOwner && (
                             <Col>
-                                <Button 
-                                    type="text" 
-                                    danger 
+                                <Button
+                                    type="text"
+                                    danger
                                     icon={<DeleteOutlined />}
                                     onClick={handleDelete}
                                 >
@@ -137,7 +137,7 @@ const ArtworkDetailPage = () => {
                             <Space
                                 style={{ cursor: 'pointer' }}
                                 onClick={() => navigate('/map', {
-                                    state: { 
+                                    state: {
                                         from: 'artwork_detail',
                                         artwork: artwork  // pass artwork data to map page
                                     }
@@ -150,18 +150,18 @@ const ArtworkDetailPage = () => {
                             </Space>
                         </Col>
                         <Col>
-                            <LikeButton 
-                                artworkId={artwork.id} 
+                            <LikeButton
+                                artworkId={artwork.id}
                                 initialLikes={artwork.total_likes}
                                 onLikeChange={fetchLikers}
                             />
                         </Col>
                     </Row>
 
-            
+
                 </Col>
             </Row>
-            
+
             <Tabs defaultActiveKey="comments" className="artwork-tabs" onChange={handleTabChange}>
                 <TabPane
                     tab={
@@ -190,8 +190,8 @@ const ArtworkDetailPage = () => {
                                 <List.Item>
                                     <List.Item.Meta
                                         avatar={
-                                            <Avatar 
-                                                src={liker.profile_picture || defaultAvatar} 
+                                            <Avatar
+                                                src={liker.profile_picture || defaultAvatar}
                                                 icon={!liker.profile_picture && <UserOutlined />}
                                             />
                                         }
@@ -204,7 +204,7 @@ const ArtworkDetailPage = () => {
                 </TabPane>
             </Tabs>
 
-            
+
         </Card>
     );
 };
