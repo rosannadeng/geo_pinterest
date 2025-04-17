@@ -38,7 +38,7 @@ const ArtworkCard = ({ artwork, setMapCenter }) => {
       setMapCenter({
         lat: artwork.latitude,
         lng: artwork.longitude,
-      });
+      }, 15);
     }
     else {
       navigate(`/artwork/${artworkId}`);
