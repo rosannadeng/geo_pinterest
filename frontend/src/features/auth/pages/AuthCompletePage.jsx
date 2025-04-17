@@ -19,9 +19,7 @@ const AuthCompletePage = () => {
             "X-CSRFToken": Cookies.get("csrftoken"),
           },
         });
-        console.log("res:", res);
         if (res.status === 200) {
-          console.log("res.data:", res.data);  
           setUser(res.data);
           setIsAuthenticated(true);
           navigate("/gallery");
