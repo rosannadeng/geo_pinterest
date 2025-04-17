@@ -22,7 +22,6 @@ const ProfilePage = () => {
     const fetchProfile = async () => {
       try {
         const response = await api.get(`/profile/${username}`);
-        console.log(response.data);
         setProfile(response.data);
         setFeaturedArtworks(response.data.featured_artworks || []);
       } catch (error) {
