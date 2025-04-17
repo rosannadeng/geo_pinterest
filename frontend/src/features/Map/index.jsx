@@ -145,8 +145,7 @@ const MapPage = () => {
 
     const handleSetCenter = (newCenter, zoomLevel) => {
         setCenter(newCenter);
-        setZoom(zoomLevel);
-        setUserZoom(null); // reset user zoom state
+        setUserZoom(zoomLevel);
     };
 
     const handleZoomChanged = (newZoom) => {
