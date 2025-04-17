@@ -63,9 +63,9 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
     return R * c;
   };
 
-const ArtworkMap = ({ center, artworks }) => {
+const ArtworkMap = ({ center, artworks, zoom, onZoomChanged }) => {
+    const [map, setMap] = useState(null);
     const [openInfoWindows, setOpenInfoWindows] = useState({});
-
     const { isLoaded } = useGoogleMaps();
 
     const handleMarkerClick = (artworkId) => {
@@ -80,6 +80,18 @@ const ArtworkMap = ({ center, artworks }) => {
         setOpenInfoWindows({});
     }, []);
 
+    // save map instance reference
+    const onLoad = useCallback((map) => {
+        setMap(map);
+    }, []);
+
+    // listen to zoom prop changes
+    useEffect(() => {
+        if (map) {
+            map.setZoom(zoom);
+        }
+    }, [zoom, map]);
+
     if (!isLoaded) {
         return <Spin size="large" style={{ display: 'flex', justifyContent: 'center', marginTop: '20%' }} />;
     }
@@ -89,8 +101,14 @@ const ArtworkMap = ({ center, artworks }) => {
             <GoogleMap
                 mapContainerStyle={containerStyle}
                 center={center}
-                zoom={4}
+                zoom={zoom}
                 onClick={onMapClick}
+                onLoad={onLoad}
+                onZoomChanged={() => {
+                    if (map && onZoomChanged) {
+                        onZoomChanged(map.getZoom());
+                    }
+                }}
             >
                 {artworks.map((artwork) => (
                     <React.Fragment key={artwork.id}>
@@ -119,15 +137,27 @@ const MapPage = () => {
     const [center, setCenter] = useState(defaultCenter);
     const [artworks, setArtworks] = useState([]);
     const [sortedArtworks, setSortedArtworks] = useState([]);
+    const [zoom, setZoom] = useState(4);
+    const [userZoom, setUserZoom] = useState(null);
     const location = useLocation();
+
+    const handleSetCenter = (newCenter) => {
+        setCenter(newCenter);
+        setZoom(10);
+        setUserZoom(null); // reset user zoom state
+    };
+
+    const handleZoomChanged = (newZoom) => {
+        setUserZoom(newZoom);
+    };
 
     useEffect(() => {
         const fetchArtworks = async () => {
             try {
                 const response = await api.get('/artwork');
                 const validArtworks = response.data.filter(a => a.latitude && a.longitude);
-                    
-                // logic: if navigated from artwork detail page, sort artworks by distance to center artwork
+                
+                // if navigated from artwork detail page, sort artworks by distance to center artwork
                 if (location.state?.from === 'artwork_detail') {
                     const centerArtwork = validArtworks.find(
                         a => a.latitude === location.state.artwork.latitude && 
@@ -157,8 +187,9 @@ const MapPage = () => {
                         lat: centerArtwork.latitude,
                         lng: centerArtwork.longitude
                     });
+                    setZoom(10);
                 } else {
-                    // logic: if not navigated from artwork detail page, sort artworks by upload date
+                    // if not navigated from artwork detail page, sort artworks by upload date to show the newest artworks first
                     setSortedArtworks(
                         [...validArtworks].sort((a, b) => 
                             new Date(b.upload_date) - new Date(a.upload_date)
@@ -171,6 +202,7 @@ const MapPage = () => {
                         }));
                         setCenter(averageLatLng(latLngPoints));
                     }
+                    setZoom(4);
                 }
                 
                 setArtworks(validArtworks);
@@ -186,11 +218,16 @@ const MapPage = () => {
         <Layout>
             <AppSider 
                 artworks={sortedArtworks} 
-                setMapCenter={setCenter} 
+                setMapCenter={handleSetCenter}
                 center={center}
             />
             <Content>
-                <ArtworkMap center={center} artworks={artworks} />
+                <ArtworkMap 
+                    center={center} 
+                    artworks={artworks} 
+                    zoom={userZoom || zoom}
+                    onZoomChanged={handleZoomChanged}
+                />
             </Content>
         </Layout>
     );
