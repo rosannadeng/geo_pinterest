@@ -5,7 +5,8 @@ const GoogleMapsContext = createContext(null);
 
 export const GoogleMapsProvider = ({ children }) => {
     const { isLoaded, loadError } = useJsApiLoader({
-        googleMapsApiKey: 'AIzaSyBdMx5mw7syNkmrDG_2lTfkLyZP_Dqdvr4',
+        // read api key from config.ini
+        googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
         libraries: ['places', 'maps'],
     });
 
