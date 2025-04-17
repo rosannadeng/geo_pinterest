@@ -3,7 +3,7 @@ import { Card, Input, Button, List, Avatar, Typography, message } from 'antd';
 import { UserOutlined, SendOutlined } from '@ant-design/icons';
 import { useAuth } from '../../../contexts/AuthContext';
 import { artwork } from '../../../services/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,Link } from 'react-router-dom';
 import './CommentSection.css';
 
 const { TextArea } = Input;
