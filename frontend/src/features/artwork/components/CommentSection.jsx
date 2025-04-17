@@ -24,7 +24,6 @@ const CommentSection = ({ artworkId }) => {
         try {
             const response = await artwork.getComments(artworkId);
             setComments(response.data);
-            console.log(response.data);
         } catch (error) {
             console.error('Error fetching comments:', error);
         }
@@ -89,11 +88,12 @@ const CommentSection = ({ artworkId }) => {
                         <List.Item.Meta
                             avatar={
                                 <Avatar 
+                                    linkto={`/profile/${comment.username}`}
                                     src={comment.user_profile_picture} 
                                     icon={!comment.user_profile_picture && <UserOutlined />}
                                 />
                             }
-                            title={<Text strong>{comment.username}</Text>}
+                            title={<Text strong><Link to={`/profile/${comment.username}`}>{comment.username}</Link></Text>}
                             description={
                                 <div>
                                     <div>{comment.comment}</div>

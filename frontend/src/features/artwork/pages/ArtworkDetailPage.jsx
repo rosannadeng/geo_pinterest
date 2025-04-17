@@ -200,11 +200,12 @@ const ArtworkDetailPage = () => {
                                     <List.Item.Meta
                                         avatar={
                                             <Avatar
-                                                src={liker.profile_picture || defaultAvatar}
+                                                linkto={`/profile/${liker.username}`}
+                                                src={liker.profile_picture}
                                                 icon={!liker.profile_picture && <UserOutlined />}
                                             />
                                         }
-                                        title={<Text strong>{liker.username}</Text>}
+                                        title={<Text strong><Link to={`/profile/${liker.username}`}>{liker.username}</Link></Text>}
                                     />
                                 </List.Item>
                             )}
