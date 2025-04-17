@@ -143,9 +143,9 @@ const MapPage = () => {
     const inputRef = useRef(null);
     const { isLoaded } = useGoogleMaps();
 
-    const handleSetCenter = (newCenter) => {
+    const handleSetCenter = (newCenter, zoomLevel) => {
         setCenter(newCenter);
-        setZoom(15);
+        setZoom(zoomLevel);
         setUserZoom(null); // reset user zoom state
     };
 
@@ -188,7 +188,7 @@ const MapPage = () => {
                     handleSetCenter({
                         lat: centerArtwork.latitude,
                         lng: centerArtwork.longitude
-                    });
+                    }, 15);
                 } else {
                     // if not navigated from artwork detail page, sort artworks by upload date to show the newest artworks first
                     setSortedArtworks(
@@ -201,7 +201,7 @@ const MapPage = () => {
                             lat: a.latitude,
                             lng: a.longitude,
                         }));
-                        setCenter(averageLatLng(latLngPoints));
+                        // setCenter(averageLatLng(latLngPoints));
                     }
                     setZoom(4);
                 }
@@ -230,7 +230,7 @@ const MapPage = () => {
                 handleSetCenter({
                     lat: placeLat,
                     lng: placeLng
-                });
+                }, 8);
 
                 artworks.forEach(artwork => {
                     const distance = calculateDistance(
