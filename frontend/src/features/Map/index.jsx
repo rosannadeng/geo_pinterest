@@ -55,13 +55,13 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const R = 6371; // radius of the earth (km)
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
-  };
+};
 
 const ArtworkMap = ({ center, artworks, zoom, onZoomChanged }) => {
     const [map, setMap] = useState(null);
@@ -140,6 +140,8 @@ const MapPage = () => {
     const [zoom, setZoom] = useState(4);
     const [userZoom, setUserZoom] = useState(null);
     const location = useLocation();
+    const inputRef = useRef(null);
+    const { isLoaded } = useGoogleMaps();
 
     const handleSetCenter = (newCenter) => {
         setCenter(newCenter);
@@ -156,11 +158,11 @@ const MapPage = () => {
             try {
                 const response = await api.get('/artwork');
                 const validArtworks = response.data.filter(a => a.latitude && a.longitude);
-                
+
                 // if navigated from artwork detail page, sort artworks by distance to center artwork
                 if (location.state?.from === 'artwork_detail') {
                     const centerArtwork = validArtworks.find(
-                        a => a.latitude === location.state.artwork.latitude && 
+                        a => a.latitude === location.state.artwork.latitude &&
                             a.longitude === location.state.artwork.longitude
                     );
 
@@ -191,7 +193,7 @@ const MapPage = () => {
                 } else {
                     // if not navigated from artwork detail page, sort artworks by upload date to show the newest artworks first
                     setSortedArtworks(
-                        [...validArtworks].sort((a, b) => 
+                        [...validArtworks].sort((a, b) =>
                             new Date(b.upload_date) - new Date(a.upload_date)
                         )
                     );
@@ -204,7 +206,7 @@ const MapPage = () => {
                     }
                     setZoom(4);
                 }
-                
+
                 setArtworks(validArtworks);
             } catch (error) {
                 console.error('Error fetching artworks:', error);
@@ -214,17 +216,58 @@ const MapPage = () => {
         fetchArtworks();
     }, [location]);
 
+    useEffect(() => {
+        if (isLoaded && inputRef.current) {
+            const searchBox = new window.google.maps.places.SearchBox(inputRef.current);
+            searchBox.addListener('places_changed', () => {
+                const places = searchBox.getPlaces();
+                if (places.length === 0) return;
+                const place = places[0];
+                if (!place.geometry?.location) return;
+
+                handleSetCenter({
+                    lat: place.geometry.location.lat(),
+                    lng: place.geometry.location.lng()
+                });
+            });
+
+            return () => {
+                window.google.maps.event.clearInstanceListeners(searchBox);
+            };
+        }
+    }, [isLoaded]);
+
+
     return (
         <Layout>
-            <AppSider 
-                artworks={sortedArtworks} 
+            <AppSider
+                artworks={sortedArtworks}
                 setMapCenter={handleSetCenter}
                 center={center}
             />
             <Content>
-                <ArtworkMap 
-                    center={center} 
-                    artworks={artworks} 
+                <div style={{
+                    position: 'relative',
+                    zIndex: 1,
+                    margin: '10px auto',
+                    width: '600px'
+                }}>
+                    <input
+                        ref={inputRef}
+                        placeholder="Where to explore?"
+                        style={{
+                            width: '100%',
+                            padding: '10px',
+                            fontSize: '16px',
+                            border: '1px solid #ddd',
+                            borderRadius: '4px',
+                            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)'
+                        }}
+                    />
+                </div>
+                <ArtworkMap
+                    center={center}
+                    artworks={artworks}
                     zoom={userZoom || zoom}
                     onZoomChanged={handleZoomChanged}
                 />
