@@ -115,7 +115,7 @@ const ArtworkDetailPage = () => {
                                 <Avatar src={artwork.artist_profile_picture} />
                             </Link>
                         </Tooltip>
-                        <Link to={`/user/${artwork.artist}`}>
+                        <Link to={`/profile/${artwork.artist_username}`}>
                             <Text strong>@{artwork.artist_username}</Text>
                         </Link>
                     </Space>
