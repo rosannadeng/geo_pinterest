@@ -187,7 +187,7 @@ const MapPage = () => {
                     handleSetCenter({
                         lat: centerArtwork.latitude,
                         lng: centerArtwork.longitude
-                    }, 15);
+                    }, 13);
                 } else {
                     // if not navigated from artwork detail page, sort artworks by upload date to show the newest artworks first
                     setSortedArtworks(
