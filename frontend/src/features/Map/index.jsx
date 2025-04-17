@@ -145,7 +145,7 @@ const MapPage = () => {
 
     const handleSetCenter = (newCenter) => {
         setCenter(newCenter);
-        setZoom(10);
+        setZoom(15);
         setUserZoom(null); // reset user zoom state
     };
 
@@ -185,11 +185,10 @@ const MapPage = () => {
                         });
 
                     setSortedArtworks([centerArtwork, ...otherArtworks]);
-                    setCenter({
+                    handleSetCenter({
                         lat: centerArtwork.latitude,
                         lng: centerArtwork.longitude
                     });
-                    setZoom(10);
                 } else {
                     // if not navigated from artwork detail page, sort artworks by upload date to show the newest artworks first
                     setSortedArtworks(
