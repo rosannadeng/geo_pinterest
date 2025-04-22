@@ -141,55 +141,53 @@ const MapPage = () => {
     };
 
     useEffect(() => {
-        const fetchArtworks = async () => {
-            try {
-                const response = await api.get('/artwork');
-                const validArtworks = response.data.filter(a => a.latitude && a.longitude);
-
-                // if navigated from artwork detail page, sort artworks by distance to center artwork
-                if (location.state?.from === 'artwork_detail') {
-                    const centerArtwork = validArtworks.find(
-                        a => a.latitude === location.state.artwork.latitude &&
-                            a.longitude === location.state.artwork.longitude
-                    );
-
-                    const otherArtworks = validArtworks
-                        .filter(a => a.id !== centerArtwork?.id)
-                        .sort((a, b) => {
-                            const distanceA = calculateDistance(
-                                centerArtwork.latitude, centerArtwork.longitude,
-                                a.latitude, a.longitude
-                            );
-                            const distanceB = calculateDistance(
-                                centerArtwork.latitude, centerArtwork.longitude,
-                                b.latitude, b.longitude
-                            );
-                            return distanceA - distanceB;
-                        });
-
-                    setSortedArtworks([centerArtwork, ...otherArtworks]);
-                    handleSetCenter({
-                        lat: centerArtwork.latitude,
-                        lng: centerArtwork.longitude
-                    }, 13);
-                } else {
-                    // if not navigated from artwork detail page, sort artworks by upload date to show the newest artworks first
-                    setSortedArtworks(
-                        [...validArtworks].sort((a, b) =>
-                            new Date(b.upload_date) - new Date(a.upload_date)
-                        )
-                    );
-                    setZoom(4);
-                }
-
-                setArtworks(validArtworks);
-            } catch (error) {
-                console.error('Error fetching artworks:', error);
-            }
-        };
-
-        fetchArtworks();
-    }, [location]);
+        if (isLoaded && inputRef.current) {
+            const searchBox = new window.google.maps.places.SearchBox(inputRef.current);
+            searchBox.addListener('places_changed', () => {
+                const places = searchBox.getPlaces();
+                if (places.length === 0) return;
+    
+                const place = places[0];
+                if (!place.geometry?.location) return;
+    
+                const placeLat = place.geometry.location.lat();
+                const placeLng = place.geometry.location.lng();
+    
+                handleSetCenter({ lat: placeLat, lng: placeLng }, 8);
+    
+                // Create artificial bounds with a padding distance (e.g., 50km radius)
+                const paddingKm = 50;
+                const degreePadding = paddingKm / 111; // approx conversion
+    
+                const sw = {
+                    lat: placeLat - degreePadding,
+                    lng: placeLng - degreePadding
+                };
+                const ne = {
+                    lat: placeLat + degreePadding,
+                    lng: placeLng + degreePadding
+                };
+    
+                // Filter artworks within bounds
+                const filtered = artworks.filter(art => (
+                    art.latitude >= sw.lat &&
+                    art.latitude <= ne.lat &&
+                    art.longitude >= sw.lng &&
+                    art.longitude <= ne.lng
+                ));
+    
+                const sorted = [...filtered].sort((a, b) =>
+                    new Date(b.upload_date) - new Date(a.upload_date)
+                );
+    
+                setSortedArtworks(sorted);
+            });
+    
+            return () => {
+                window.google.maps.event.clearInstanceListeners(searchBox);
+            };
+        }
+    }, [isLoaded, artworks]); 
 
     useEffect(() => {
         if (isLoaded && inputRef.current) {
