@@ -218,10 +218,11 @@ def register_view(request):
         if form.is_valid():
             try:
                 user = form.register_user()
+                redirect_url = f"{settings.FRONTEND_URL}/auth"
                 return Response(
                     {
                         "message": "Registration successful, please login",
-                        "redirect_url": f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/auth",
+                        "redirect_url": redirect_url
                     }
                 )
             except Exception as e:
