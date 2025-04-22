@@ -20,37 +20,6 @@ const defaultCenter = {
     lng: -98.5795,
 };
 
-const toRadians = (deg) => deg * (Math.PI / 180);
-
-const toDegrees = (rad) => rad * (180 / Math.PI);
-
-const latLngToXYZ = (lat, lng) => {
-    const latRad = toRadians(lat);
-    const lngRad = toRadians(lng);
-    return {
-        x: Math.cos(latRad) * Math.cos(lngRad),
-        y: Math.cos(latRad) * Math.sin(lngRad),
-        z: Math.sin(latRad),
-    };
-};
-
-const xyzToLatLng = ({ x, y, z }) => {
-    const hyp = Math.sqrt(x * x + y * y);
-    const lat = toDegrees(Math.atan2(z, hyp));
-    const lng = toDegrees(Math.atan2(y, x));
-    return { lat, lng };
-};
-
-const averageLatLng = (points) => {
-    const xyzPoints = points.map(({ lat, lng }) => latLngToXYZ(lat, lng));
-    const avgX = xyzPoints.reduce((sum, { x }) => sum + x, 0) / points.length;
-    const avgY = xyzPoints.reduce((sum, { y }) => sum + y, 0) / points.length;
-    const avgZ = xyzPoints.reduce((sum, { z }) => sum + z, 0) / points.length;
-
-    return xyzToLatLng({ x: avgX, y: avgY, z: avgZ });
-}
-
-// calculate distance between two points, using Haversine formula
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const R = 6371; // radius of the earth (km)
     const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -80,9 +49,8 @@ const ArtworkMap = ({ center, artworks, zoom, onZoomChanged }) => {
         setOpenInfoWindows({});
     }, []);
 
-    // save map instance reference
-    const onLoad = useCallback((map) => {
-        setMap(map);
+    const onLoad = useCallback((mapInstance) => {
+        setMap(mapInstance);
     }, []);
 
     // listen to zoom prop changes
@@ -106,7 +74,9 @@ const ArtworkMap = ({ center, artworks, zoom, onZoomChanged }) => {
                 onLoad={onLoad}
                 onZoomChanged={() => {
                     if (map && onZoomChanged) {
-                        onZoomChanged(map.getZoom());
+                        const bounds = map.getBounds();
+                        const zoom = map.getZoom();
+                        onZoomChanged(zoom, bounds);
                     }
                 }}
             >
@@ -148,8 +118,26 @@ const MapPage = () => {
         setUserZoom(zoomLevel);
     };
 
-    const handleZoomChanged = (newZoom) => {
+    const handleZoomChanged = (newZoom, bounds) => {
         setUserZoom(newZoom);
+
+        if (bounds && artworks.length > 0) {
+            const ne = bounds.getNorthEast();
+            const sw = bounds.getSouthWest();
+
+            const filtered = artworks.filter(art => (
+                art.latitude >= sw.lat() &&
+                art.latitude <= ne.lat() &&
+                art.longitude >= sw.lng() &&
+                art.longitude <= ne.lng()
+            ));
+
+            const sorted = [...filtered].sort((a, b) =>
+                new Date(b.upload_date) - new Date(a.upload_date)
+            );
+
+            setSortedArtworks(sorted);
+        }
     };
 
     useEffect(() => {
@@ -169,16 +157,12 @@ const MapPage = () => {
                         .filter(a => a.id !== centerArtwork?.id)
                         .sort((a, b) => {
                             const distanceA = calculateDistance(
-                                centerArtwork.latitude,
-                                centerArtwork.longitude,
-                                a.latitude,
-                                a.longitude
+                                centerArtwork.latitude, centerArtwork.longitude,
+                                a.latitude, a.longitude
                             );
                             const distanceB = calculateDistance(
-                                centerArtwork.latitude,
-                                centerArtwork.longitude,
-                                b.latitude,
-                                b.longitude
+                                centerArtwork.latitude, centerArtwork.longitude,
+                                b.latitude, b.longitude
                             );
                             return distanceA - distanceB;
                         });
@@ -195,13 +179,6 @@ const MapPage = () => {
                             new Date(b.upload_date) - new Date(a.upload_date)
                         )
                     );
-                    if (validArtworks.length > 0) {
-                        const latLngPoints = validArtworks.map(a => ({
-                            lat: a.latitude,
-                            lng: a.longitude,
-                        }));
-                        // setCenter(averageLatLng(latLngPoints));
-                    }
                     setZoom(4);
                 }
 
@@ -226,22 +203,14 @@ const MapPage = () => {
                 const placeLat = place.geometry.location.lat();
                 const placeLng = place.geometry.location.lng();
 
-                handleSetCenter({
-                    lat: placeLat,
-                    lng: placeLng
-                }, 8);
+                handleSetCenter({ lat: placeLat, lng: placeLng }, 8);
 
-                artworks.forEach(artwork => {
-                    const distance = calculateDistance(
-                        placeLat,
-                        placeLng,
-                        artwork.latitude,
-                        artwork.longitude
-                    );
-                    artwork.distance = distance;
-                }
-                );
-                const sorted = [...artworks].sort((a, b) => a.distance - b.distance);
+                const updated = artworks.map(art => ({
+                    ...art,
+                    distance: calculateDistance(placeLat, placeLng, art.latitude, art.longitude)
+                }));
+
+                const sorted = updated.sort((a, b) => a.distance - b.distance);
                 setSortedArtworks(sorted);
             });
 
