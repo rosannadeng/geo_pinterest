@@ -29,12 +29,12 @@ config.read("config.ini")
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-q+&(ha2sc^9dw4w4z790*6-3mt5$fv2p+i7+^3d!0x0hfa89gt"
+SECRET_KEY = config.get("Django", "SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "54.167.152.59", "team4.cmu-webapps.com"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "54.167.152.59", "geo_art_community.com"]
 
 
 # Application definition
@@ -182,7 +182,7 @@ AUTHENTICATION_BACKENDS = (
 # Social Auth settings
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config.get("google_oauth", "client_id", fallback="")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config.get("google_oauth", "client_secret", fallback="")
-SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = "https://team4.cmu-webapps.com/oauth/complete/google-oauth2/"
+SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = "https://geo_art_community.com/oauth/complete/google-oauth2/"
 
 # Additional Social Auth settings
 SOCIAL_AUTH_URL_NAMESPACE = "social"
@@ -236,7 +236,7 @@ REST_FRAMEWORK = {
 }
 
 # URL settings
-FRONTEND_URL = "https://team4.cmu-webapps.com"
+FRONTEND_URL = "https://geo_art_community.com"
 APPEND_SLASH = True
 
 # Session settings
@@ -252,7 +252,7 @@ CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
-    "https://team4.cmu-webapps.com",
+    "https://geo_art_community.com",
 ]
 
 # CORS settings
