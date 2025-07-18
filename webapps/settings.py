@@ -29,7 +29,9 @@ config.read("config.ini")
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config.get("Django", "SECRET_KEY")
+SECRET_KEY = config.get("Django", "SECRET_KEY", fallback=None)
+if SECRET_KEY is None:
+    raise ValueError("SECRET_KEY is missing in the configuration file. Please add it under the [Django] section in config.ini.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
