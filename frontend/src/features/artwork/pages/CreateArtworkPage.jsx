@@ -71,7 +71,7 @@ const CreateArtworkPage = () => {
   const fetchLocationName = async (lat, lng) => {
     try {
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=AIzaSyBdMx5mw7syNkmrDG_2lTfkLyZP_Dqdvr4`
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
       );
       const data = await response.json();
       return data.results[0]?.formatted_address || '';
@@ -89,15 +89,17 @@ const CreateArtworkPage = () => {
 
     try {
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=AIzaSyBdMx5mw7syNkmrDG_2lTfkLyZP_Dqdvr4`
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+          query
+        )}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
       );
       const data = await response.json();
-      
+
       if (data.status === 'OK') {
-        const options = data.results.map(result => ({
+        const options = data.results.map((result) => ({
           value: result.formatted_address,
           label: result.formatted_address,
-          location: result.geometry.location
+          location: result.geometry.location,
         }));
         setLocationOptions(options);
       } else {
@@ -122,11 +124,13 @@ const CreateArtworkPage = () => {
     searchTimeout.current = setTimeout(async () => {
       try {
         const response = await api.get(`/location/search?q=${value}`);
-        setLocationOptions(response.data.map(location => ({
-          value: location.id,
-          label: location.name,
-          ...location
-        })));
+        setLocationOptions(
+          response.data.map((location) => ({
+            value: location.id,
+            label: location.name,
+            ...location,
+          }))
+        );
       } catch (error) {
         console.error('Error searching locations:', error);
         setLocationOptions([]);
@@ -184,7 +188,10 @@ const CreateArtworkPage = () => {
       formData.append('title', values.title);
       formData.append('description', values.description || '');
       formData.append('medium', values.medium);
-      formData.append('creation_date', values.creation_date.format('YYYY-MM-DD'));
+      formData.append(
+        'creation_date',
+        values.creation_date.format('YYYY-MM-DD')
+      );
       formData.append('location_name', values.location_name);
 
       if (markerPosition) {
@@ -243,10 +250,7 @@ const CreateArtworkPage = () => {
           <Input />
         </Form.Item>
 
-        <Form.Item
-          name="description"
-          label="Description"
-        >
+        <Form.Item name="description" label="Description">
           <TextArea rows={4} />
         </Form.Item>
 
@@ -268,7 +272,9 @@ const CreateArtworkPage = () => {
         <Form.Item
           name="creation_date"
           label="Creation Date"
-          rules={[{ required: true, message: 'Please select the creation date!' }]}
+          rules={[
+            { required: true, message: 'Please select the creation date!' },
+          ]}
         >
           <DatePicker style={{ width: '100%' }} />
         </Form.Item>
@@ -278,10 +284,7 @@ const CreateArtworkPage = () => {
           label="Location"
           rules={[{ required: true, message: 'Please input the location!' }]}
         >
-          <Input
-            ref={searchInputRef}
-            placeholder="Search for a location"
-          />
+          <Input ref={searchInputRef} placeholder="Search for a location" />
         </Form.Item>
 
         <Form.Item name="latitude" style={{ display: 'none' }}>
@@ -294,13 +297,15 @@ const CreateArtworkPage = () => {
 
         {isLoaded && (
           <div style={{ marginBottom: '24px' }}>
-            <label><strong>Pick location on map:</strong></label>
+            <label>
+              <strong>Pick location on map:</strong>
+            </label>
             <GoogleMap
               mapContainerStyle={mapContainerStyle}
               center={markerPosition || defaultCenter}
               zoom={markerPosition ? 12 : 4}
               onClick={handleMapClick}
-              onLoad={map => setMapInstance(map)}
+              onLoad={(map) => setMapInstance(map)}
             >
               {markerPosition && <Marker position={markerPosition} />}
             </GoogleMap>
